@@ -10,3 +10,5 @@ gradle*
 # Class files
 **/*.class
 !libs-jmm/**/*.class
+
+.DS_Store
