@@ -4,50 +4,50 @@ grammar Javamm;
     package pt.up.fe.comp2023;
 }
 
-INT : [0] | [1-9][0-9]* ;
-ID : [a-zA-Z_$][a-zA-Z_0-9$]* ;
+INT : '0' | [1-9][0-9]* ;
+ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
-WS : [ \t\n\r\f]+ -> skip ;
+WS : [ \t\n\r]+ -> skip ;
 
-program: (importDeclaration)* classDeclaration EOF;
+COMMENT_TRADITIONAL : '/*' .*? '*/' -> skip ;
+COMMENT_EOL : '//' ~[\r\n]* -> skip ;
 
-importDeclaration: 'import' ID ('.' ID)* ';';
+program : (importDeclaration)* classDeclaration EOF ;
 
-classDeclaration:
-	'class' ID ('extends' ID)? '{' (varDeclaration)* (
-		methodDeclaration
-	)* '}';
+importDeclaration : 'import' ID ('.' ID)* ';' ;
 
-varDeclaration: type ID ';';
+classDeclaration :
+    'class' ID ('extends' ID)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' ;
 
-methodDeclaration: ('public')? type ID '(' (
-		type ID ( ',' type ID)*
-	)? ')' '{' (varDeclaration)* (statement)* 'return' expression ';' '}'
-	| ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (
-		varDeclaration
-	)* (statement)* '}';
+varDeclaration : type ID ';' ;
 
-type: 'int' '[' ']' | 'boolean' | 'int' | ID;
+mainMethodDeclaration :
+    ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (varDeclaration)* (statement)* '}' ;
 
-statement:
-	'{' (statement)* '}'
-	| 'if' '(' expression ')' statement 'else' statement
-	| 'while' '(' expression ')' statement
-	| expression ';'
-	| ID '=' expression ';'
-	| ID '[' expression ']' '=' expression ';';
+instanceMethodDeclaration :
+    ('public')? type ID '(' (type ID (',' type ID)*)? ')' '{' (varDeclaration)* (statement)* 'return' expression ';' '}';
 
-expression:
-	expression ('&&' | '<' | '+' | '-' | '*' | '/') expression
-	| expression '[' expression ']'
-	| expression '.' 'length'
-	| expression '.' ID '(' (expression ( ',' expression)*)? ')'
-	| 'new' 'int' '[' expression ']'
-	| 'new' ID '(' ')'
-	| '!' expression
-	| '(' expression ')'
-	| INT
-	| 'true'
-	| 'false'
-	| ID
-	| 'this';
+type : 'int' '[' ']' | 'boolean' | 'int' | 'String' | ID ;
+
+statement :
+    '{' (statement)* '}'
+    | 'if' '(' expression ')' statement ('else' statement)?
+    | 'while' '(' expression ')' statement
+    | expression ';'
+    | ID '=' expression ';'
+    | ID '[' expression ']' '=' expression ';' ;
+
+expression :
+    expression ('&&' | '<' | '+' | '-' | '*' | '/') expression
+    | expression '[' expression ']'
+    | expression '.' 'length'
+    | expression '.' ID '(' (expression (',' expression)*)? ')'
+    | 'new' 'int' '[' expression ']'
+    | 'new' ID '(' ')'
+    | '!' expression
+    | '(' expression ')'
+    | INT
+    | 'true'
+    | 'false'
+    | ID
+    | 'this' ;

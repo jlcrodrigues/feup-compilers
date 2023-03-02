@@ -11,8 +11,8 @@ class Fac {
     }
 
     public static void main ( String [] args ){
-    io . println ( new Fac (). computeFac (10)); // assuming the existence
-                    // of the classfile io . class
+        io . println ( new Fac (). computeFac (10)); /* assuming the existence?*/
+                                                 // assuming the existence
 }
 }
 
