@@ -8,7 +8,7 @@ class Fac extends FacInterface{
             num_aux = 1;
         else
             num_aux = num * (this.computeFac(num-1));
-        return num_aux ;
+        return num_aux;
     }
 
     public static void main ( String [] args ){

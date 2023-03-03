@@ -35,7 +35,7 @@ public class Launcher {
         SimpleParser parser = new SimpleParser();
 
         // Parse stage
-        JmmParserResult parserResult = parser.parse(code, config);
+        JmmParserResult parserResult = parser.parse(code, parser.getDefaultRule(),config);
 
         // Check if there are parsing errors
         TestUtils.noErrors(parserResult.getReports());
