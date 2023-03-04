@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.table;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class ASymbolTable implements SymbolTable {
     public ASymbolTable() {
         className = "";
         superName = "";
-        importedClasses = List.of();
+        importedClasses = new ArrayList<String>();
         fields = new HashMap<String, Symbol>();
         methods = new HashMap<String, SymbolTableMethod>();
     }
@@ -61,6 +62,23 @@ public class ASymbolTable implements SymbolTable {
     @Override
     public List<Symbol> getLocalVariables(String s) {
         return methods.get(s).getLocalVariables();
+    }
+
+    @Override
+    public String toString() {
+        String res = "";
+        for (String s : importedClasses) {
+            res += "[import] " + s + "\n";
+        }
+        res += "[class] " + className;
+        if (superName != "") res += " [extends] " + superName + "\n";
+        for (String s : fields.keySet()) {
+            res += "  [field] (" + fields.get(s).getType().getName() + ") " + s + "\n";
+        }
+        for (SymbolTableMethod method : methods.values()) {
+            res += method.toString();
+        }
+        return res;
     }
 
     public void addImport(String path) {

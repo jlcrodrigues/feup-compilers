@@ -2,6 +2,8 @@ import io ;
 import FacInterface;
 
 class Fac extends FacInterface{
+    int hello;
+
     public int computeFac ( int num , boolean stop){
         int num_aux ;
         if ( !(num < 1))

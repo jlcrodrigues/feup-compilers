@@ -24,6 +24,18 @@ public class SymbolTableMethod {
         return name;
     }
 
+    @Override
+    public String toString() {
+        String res = "  [method] (" + returnType.getName() + ") " + name + "\n";
+        for (Symbol s : parameters.values()) {
+            res += "    [parameter] (" + s.getType().getName() + ") " + s.getName() + "\n";
+        }
+        for (Symbol s : localVariables.values()) {
+            res += "    [variable] (" + s.getType().getName() + ") " + s.getName() + "\n";
+        }
+        return res;
+    }
+
     public void setReturnType(Type type) {
         this.returnType = type;
     }

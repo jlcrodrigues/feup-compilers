@@ -8,6 +8,8 @@ import java.util.Map;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.ast.JmmVisitor;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
+import pt.up.fe.comp2023.table.ASymbolTable;
+import pt.up.fe.comp2023.table.SymbolTableGenerator;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -42,6 +44,10 @@ public class Launcher {
         TestUtils.noErrors(parserResult.getReports());
 
         System.out.println(parserResult.getRootNode().toTree());
+
+        ASymbolTable table = new SymbolTableGenerator().getSymbolTable(parserResult.getRootNode());
+        System.out.println("Symbol Table:");
+        System.out.println(table);
 
         // ... add remaining stages
     }
