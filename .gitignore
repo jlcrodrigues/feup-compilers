@@ -15,3 +15,5 @@ gradle*
 
 
 *.antlr/
+
+local.properties
