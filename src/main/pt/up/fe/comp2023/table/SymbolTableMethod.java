@@ -1,45 +1,50 @@
 package pt.up.fe.comp2023.table;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 
 public class SymbolTableMethod {
     private String name;
-    private String returnType;
-    private Map<String, String> parameters;
-    private Map<String, String> localVariables;
+    private Type returnType;
+    private Map<String, Symbol> parameters;
+    private Map<String, Symbol> localVariables;
 
     public SymbolTableMethod(String name) {
         this.name = name;
-        this.returnType = "void";
-        this.parameters = Map.of();
-        this.localVariables = Map.of();
+        this.returnType = null;
+        this.parameters = new HashMap<String, Symbol>();
+        this.localVariables = new HashMap<String, Symbol>();
     }
 
     public String getName() {
         return name;
     }
 
-    public void setReturnType(String returnType) {
-        this.returnType = returnType;
+    public void setReturnType(Type type) {
+        this.returnType = type;
     }
 
-    public String getReturnType() {
+    public Type getReturnType() {
         return returnType;
     }
 
-    public Map<String, String> getParameters() {
-        return parameters;
+    public List<Symbol> getParameters() {
+        return List.copyOf(parameters.values());
     }
 
-    public Map<String, String> getLocalVariables() {
-        return localVariables;
+    public List<Symbol> getLocalVariables() {
+        return List.copyOf(localVariables.values());
     }
 
-    public void addParameter(String name, String type) {
-        parameters.put(name, type);
+    public void addParameter(String name, Type type) {
+        parameters.put(name, new Symbol(type, name));
     }
 
-    public void addLocalVariable(String name, String type) {
-        localVariables.put(name, type);
+    public void addLocalVariable(String name, Type type) {
+        localVariables.put(name, new Symbol(type, name));
     }
 }

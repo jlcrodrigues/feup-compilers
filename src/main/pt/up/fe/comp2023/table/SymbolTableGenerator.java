@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.table;
 
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
@@ -38,7 +39,12 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
     private Void dealWithClass(JmmNode node, Void arg) {
         symbolTable.setClassName(node.get("id"));
         for (JmmNode child : node.getChildren()) {
-            visit(child, null);
+            if (child.getKind().equals("Var")) {
+                symbolTable.addField(child.get("id"), child.getChildren().get(0).get("id"));
+            }
+            else {
+                visit(child, null);
+            }
         }
         return null;
     }
@@ -52,11 +58,11 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
         SymbolTableMethod method = new SymbolTableMethod(node.get("id"));
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("ReturnType")) {
-                method.setReturnType(child.getChildren().get(0).get("id"));
+                method.setReturnType(getType(child.getChildren().get(0)));
             } else if (child.getKind().equals("ArgumentObject")) {
-                method.addParameter(child.get("id"), child.getChildren().get(0).get("type"));
+                method.addParameter(child.get("id"), getType(child.getChildren().get(0)));
             } else if (child.getKind().equals("Var")) {
-                method.addLocalVariable(child.get("id"), child.getChildren().get(0).get("type"));
+                method.addLocalVariable(child.get("id"), getType(child.getChildren().get(0)));
             }
         }
         symbolTable.addMethod(method);
@@ -65,14 +71,19 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
 
     private Void dealWithMainMethod(JmmNode node, Void arg) {
         SymbolTableMethod method = new SymbolTableMethod("main");
-        method.setReturnType("void");
-        method.addParameter("args", "String[]");
+        method.setReturnType(new Type("void", false));
+        method.addParameter("args", new Type("String", true));
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Var")) {
-                method.addLocalVariable(child.get("id"), child.getChildren().get(0).get("type"));
+                method.addLocalVariable(child.get("id"), getType(child.getChildren().get(0)));
             }
         }
         symbolTable.addMethod(method);
         return null;
+    }
+
+    private Type getType(JmmNode node) {
+        // TODO fix isArray
+        return new Type(node.get("id"), false);
     }
 }

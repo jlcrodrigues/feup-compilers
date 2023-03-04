@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.table;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,51 +12,55 @@ public class ASymbolTable implements SymbolTable {
     private String className;
     private String superName;
     private List<String> importedClasses;
+    private Map<String, Symbol> fields;
     private Map<String, SymbolTableMethod> methods;
 
     public ASymbolTable() {
+        className = "";
+        superName = "";
         importedClasses = List.of();
-        methods = Map.of();
+        fields = new HashMap<String, Symbol>();
+        methods = new HashMap<String, SymbolTableMethod>();
     }
 
     @Override
     public List<String> getImports() {
-        return null;
+        return importedClasses;
     }
 
     @Override
     public String getClassName() {
-        return null;
+        return className;
     }
 
     @Override
     public String getSuper() {
-        return null;
+        return superName;
     }
 
     @Override
     public List<Symbol> getFields() {
-        return null;
+        return List.copyOf(fields.values());
     }
 
     @Override
     public List<String> getMethods() {
-        return null;
+        return List.copyOf(methods.keySet());
     }
 
     @Override
     public Type getReturnType(String s) {
-        return null;
+        return methods.get(s).getReturnType();
     }
 
     @Override
     public List<Symbol> getParameters(String s) {
-        return null;
+        return methods.get(s).getParameters();
     }
 
     @Override
     public List<Symbol> getLocalVariables(String s) {
-        return null;
+        return methods.get(s).getLocalVariables();
     }
 
     public void addImport(String path) {
@@ -70,7 +75,13 @@ public class ASymbolTable implements SymbolTable {
         this.superName = superName;
     }
 
+    public void addField(String name, String type) {
+        // TODO fix isArray
+        fields.put(name, new Symbol(new Type(type, false), name));
+    }
+
     public void addMethod(SymbolTableMethod method) {
         methods.put(method.getName(), method);
     }
+
 }
