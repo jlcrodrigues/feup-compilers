@@ -14,7 +14,9 @@ COMMENT_EOL : '//' ~[\r\n]* -> skip ;
 
 program : (importDeclaration)* classDeclaration EOF ;
 
-importDeclaration : 'import' id = ID ('.' ID)* ';' #Import;
+importDeclaration : 'import' id = ID (subimportDeclaration)* ';' #Import;
+
+subimportDeclaration : '.' id = ID #SubImport;
 
 classDeclaration :
     'class' id = ID (classExtension)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' #Class;
