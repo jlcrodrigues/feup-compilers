@@ -15,7 +15,7 @@ import pt.up.fe.comp2023.SimpleParser;
 import pt.up.fe.comp2023.table.ASymbolTable;
 import pt.up.fe.comp2023.table.SymbolTableGenerator;
 
-public class SymbolTableTest {
+public class MySymbolTableTest {
     private boolean showTree = true;
 
     /**
