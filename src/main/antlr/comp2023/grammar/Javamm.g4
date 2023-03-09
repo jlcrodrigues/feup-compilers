@@ -7,47 +7,80 @@ grammar Javamm;
 INT : '0' | [1-9][0-9]* ;
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
-WS : [ \t\n\r]+ -> skip ;
+WS : [ \t\n\r\f]+ -> skip ;
+
 
 COMMENT_TRADITIONAL : '/*' .*? '*/' -> skip ;
 COMMENT_EOL : '//' ~[\r\n]* -> skip ;
 
 program : (importDeclaration)* classDeclaration EOF ;
 
-importDeclaration : 'import' ID ('.' ID)* ';' ;
+importDeclaration : 'import' id = ID (subimportDeclaration)* ';' #Import;
+
+subimportDeclaration : '.' id = ID #SubImport;
 
 classDeclaration :
-    'class' ID ('extends' ID)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' ;
+    'class' id = ID (classExtension)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' #Class;
 
-varDeclaration : type ID ';' ;
+classExtension : 'extends' id = ID #Extends;
+
+varDeclaration : type id = ID ';' #Var ;
 
 mainMethodDeclaration :
-    ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (varDeclaration)* (statement)* '}' ;
+    ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (varDeclaration)* (statement)* '}' #MainMethod ;
 
 instanceMethodDeclaration :
-    ('public')? type ID '(' (type ID (',' type ID)*)? ')' '{' (varDeclaration)* (statement)* 'return' expression ';' '}';
+    ('public')? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
 
-type : 'int' '[' ']' | 'boolean' | 'int' | 'String' | ID ;
+returnType : type;
+
+returnObject : expression;
+
+argumentObject : type id = ID;
+
+type :
+    id = 'int' isArray?
+    | id ='boolean' isArray?
+    | id = 'String' isArray?
+    | id = ID
+    ;
+
+isArray :
+    '[' id = (INT | ID)? ']'
+    ;
 
 statement :
-    '{' (statement)* '}'
-    | 'if' '(' expression ')' statement ('else' statement)?
-    | 'while' '(' expression ')' statement
-    | expression ';'
-    | ID '=' expression ';'
-    | ID '[' expression ']' '=' expression ';' ;
+    '{' (statement)* '}' #Block
+    | 'if' '(' condition ')' statement (elseStatement)? #If
+    | 'while' '(' condition ')' statement #While
+    | expression ';' #ExpressionStatement
+    | id = ID '=' expression ';' #Assignment
+    | id = ID isArray? '=' expression ';' #ArrayAssignment
+    ;
+
+condition : expression;
+
+elseStatement : 'else' statement #Else;
 
 expression :
-    expression ('&&' | '<' | '+' | '-' | '*' | '/') expression
-    | expression '[' expression ']'
-    | expression '.' 'length'
-    | expression '.' ID '(' (expression (',' expression)*)? ')'
-    | 'new' 'int' '[' expression ']'
-    | 'new' ID '(' ')'
-    | '!' expression
-    | '(' expression ')'
-    | INT
-    | 'true'
-    | 'false'
-    | ID
-    | 'this' ;
+    '(' expression ')' #Parentheses
+    | '!' expression #Negate
+    | expression op = ('*' | '/') expression #BinaryOp
+    | expression op = ('+' | '-') expression #BinaryOp
+    | expression op = ('<' | '<=' | '>' | '>=') expression #BinaryOp
+    | expression op = ('==' | '!=') expression #BinaryOp
+    | expression op = '&&' expression #BinaryOp
+    | expression op = '||' expression #BinaryOp
+    | expression '[' expression ']' #ArrayAccess
+    | expression '.' 'length' #MemberAccessLength
+    | expression '.' id = ID '(' (expression (',' expression)*)? ')' #MethodCall
+    | 'new' 'int' '['expression']' #NewArray
+    | 'new' id = ID '(' ')' #NewObject
+    | value = INT #Literal
+    | value = 'true' #Literal
+    | value = 'false' #Literal
+    | id = ID #Variable
+    | value = 'this' #Literal
+    ;
+
+
