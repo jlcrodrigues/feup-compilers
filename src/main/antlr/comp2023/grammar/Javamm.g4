@@ -14,7 +14,9 @@ COMMENT_EOL : '//' ~[\r\n]* -> skip ;
 
 program : (importDeclaration)* classDeclaration EOF ;
 
-importDeclaration : 'import' id = ID ('.' ID)* ';' #Import;
+importDeclaration : 'import' id = ID (subimportDeclaration)* ';' #Import;
+
+subimportDeclaration : '.' id = ID #SubImport;
 
 classDeclaration :
     'class' id = ID (classExtension)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' #Class;
@@ -36,11 +38,14 @@ returnObject : expression;
 argumentObject : type id = ID;
 
 type :
-    id = 'int' '[' ']'
-    | id ='boolean'
-    | id = 'int'
-    | id = 'String'
+    id = 'int' isArray?
+    | id ='boolean' isArray?
+    | id = 'String' isArray?
     | id = ID
+    ;
+
+isArray :
+    '[' id = (INT | ID)? ']'
     ;
 
 statement :
@@ -49,7 +54,7 @@ statement :
     | 'while' '(' condition ')' statement #While
     | expression ';' #ExpressionStatement
     | id = ID '=' expression ';' #Assignment
-    | id = ID '[' expression ']' '=' expression ';' #ArrayAssignment
+    | id = ID isArray? '=' expression ';' #ArrayAssignment
     ;
 
 condition : expression;
@@ -68,7 +73,7 @@ expression :
     | expression '[' expression ']' #ArrayAccess
     | expression '.' 'length' #MemberAccessLength
     | expression '.' id = ID '(' (expression (',' expression)*)? ')' #MethodCall
-    | 'new' 'int' '[' expression ']' #NewIntArray
+    | 'new' type isArray #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal
     | value = 'true' #Literal
