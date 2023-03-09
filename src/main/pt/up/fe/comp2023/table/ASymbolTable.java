@@ -93,9 +93,8 @@ public class ASymbolTable implements SymbolTable {
         this.superName = superName;
     }
 
-    public void addField(String name, String type) {
-        // TODO fix isArray
-        fields.put(name, new Symbol(new Type(type, false), name));
+    public void addField(String name, Symbol symbol) {
+        fields.put(name, symbol);
     }
 
     public void addMethod(SymbolTableMethod method) {

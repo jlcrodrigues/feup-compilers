@@ -1,5 +1,6 @@
 package pt.up.fe.comp2023.table;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
@@ -28,7 +29,11 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
     private Void dealWithProgram(JmmNode node, Void arg) {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Import")) {
-                symbolTable.addImport(child.get("id"));
+                String path = child.get("id");
+                for (JmmNode grandChild : child.getChildren()) {
+                    path += "." + grandChild.get("id");
+                }
+                symbolTable.addImport(path);
             } else {
                 visit(child, null);
             }
@@ -40,7 +45,9 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
         symbolTable.setClassName(node.get("id"));
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Var")) {
-                symbolTable.addField(child.get("id"), child.getChildren().get(0).get("id"));
+                symbolTable.addField(
+                        child.get("id"),
+                        new Symbol(getType(child.getChildren().get(0)), child.get("id")));
             }
             else {
                 visit(child, null);
@@ -83,7 +90,6 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
     }
 
     private Type getType(JmmNode node) {
-        // TODO fix isArray
-        return new Type(node.get("id"), false);
+        return new Type(node.get("id"), node.getChildren().size() > 0);
     }
 }

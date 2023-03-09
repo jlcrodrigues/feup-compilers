@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import pt.up.fe.comp.TestUtils;
+import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
+import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmVisitor;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp2023.table.ASymbolTable;
@@ -45,9 +48,10 @@ public class Launcher {
 
         System.out.println(parserResult.getRootNode().toTree());
 
-        ASymbolTable table = new SymbolTableGenerator().getSymbolTable(parserResult.getRootNode());
+        JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
+
         System.out.println("Symbol Table:");
-        System.out.println(table);
+        System.out.println(result.getSymbolTable());
 
         // ... add remaining stages
     }
