@@ -7,6 +7,7 @@ import java.util.Map;
 
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
+import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -39,18 +40,17 @@ public class Launcher {
 
         // Check if there are parsing errors
 
-        if(parserResult.getReports().size() > 0){
-            try{
-                TestUtils.noErrors(parserResult.getReports());
-            }
-            catch(Exception e){
-                System.out.println("Reports: "+ parserResult.getReports());
-                System.out.println("There were a total of " + parserResult.getReports().size() + " error(s)");
-            }
-        }
-        else
-            System.out.println(parserResult.getRootNode().toTree());
+        long errorCount = parserResult.getReports().stream()
+                .filter(report -> report.getType() == ReportType.ERROR)
+                .peek(report -> System.out.println("Error report: " + report))
+                .count();
 
+        System.out.println("Number of error reports: " + errorCount);
+
+
+        if(errorCount == 0){
+            System.out.println(parserResult.getRootNode().toTree());
+        }
 
         // ... add remaining stages
     }
