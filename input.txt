@@ -1,6 +1,7 @@
 import java.utils.io;
 import FacInterface;
 
+<<<<<<< HEAD
 class Fac extends FacInterface{
     int hello;
 
@@ -16,6 +17,6 @@ class Fac extends FacInterface{
     public static void main ( String [] args ){
         io.println( new Fac().computeFac(10)); /* assuming the existence?*/
                                                 // assuming the existence
-}
+    }
 }
 

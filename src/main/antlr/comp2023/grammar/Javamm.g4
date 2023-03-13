@@ -7,7 +7,8 @@ grammar Javamm;
 INT : '0' | [1-9][0-9]* ;
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
-WS : [ \t\n\r]+ -> skip ;
+WS : [ \t\n\r\f]+ -> skip ;
+
 
 COMMENT_TRADITIONAL : '/*' .*? '*/' -> skip ;
 COMMENT_EOL : '//' ~[\r\n]* -> skip ;
@@ -74,6 +75,7 @@ expression :
     | expression '.' 'length' #MemberAccessLength
     | expression '.' id = ID '(' (expression (',' expression)*)? ')' #MethodCall
     | 'new' type isArray #NewArray
+    //| 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal
     | value = 'true' #Literal
