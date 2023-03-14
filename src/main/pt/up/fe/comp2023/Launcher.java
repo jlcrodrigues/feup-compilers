@@ -47,10 +47,10 @@ public class Launcher {
 
         System.out.println("Number of error reports: " + errorCount);
 
+        if (errorCount > 0) return;
 
-        if(errorCount == 0){
-            System.out.println(parserResult.getRootNode().toTree());
-        }
+
+        System.out.println(parserResult.getRootNode().toTree());
 
         JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
 

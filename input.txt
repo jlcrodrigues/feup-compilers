@@ -1,7 +1,6 @@
 import java.utils.io;
 import FacInterface;
 
-<<<<<<< HEAD
 class Fac extends FacInterface{
     int hello;
 
