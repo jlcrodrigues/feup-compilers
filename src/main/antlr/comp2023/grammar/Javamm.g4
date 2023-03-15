@@ -74,6 +74,7 @@ expression :
     | expression '[' expression ']' #ArrayAccess
     | expression '.' 'length' #MemberAccessLength
     | expression '.' id = ID '(' (expression (',' expression)*)? ')' #MethodCall
+    //| 'new' type isArray #NewArray
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal

@@ -1,0 +1,95 @@
+package pt.up.fe.comp2023.table;
+
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
+import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.AJmmVisitor;
+import pt.up.fe.comp.jmm.ast.JmmNode;
+
+public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
+    private ASymbolTable symbolTable;
+
+    public SymbolTableGenerator() {
+        symbolTable = new ASymbolTable();
+    }
+
+    public ASymbolTable getSymbolTable(JmmNode node) {
+        visit(node);
+        return symbolTable;
+    }
+
+    @Override
+    protected void buildVisitor() {
+        addVisit("Program", this::dealWithProgram);
+        addVisit("Class", this::dealWithClass);
+        addVisit("Extends", this::dealWithExtends);
+        addVisit("InstanceMethod", this::dealWithInstanceMethod);
+        addVisit("MainMethod", this::dealWithMainMethod);
+    }
+
+    private Void dealWithProgram(JmmNode node, Void arg) {
+        for (JmmNode child : node.getChildren()) {
+            if (child.getKind().equals("Import")) {
+                String path = child.get("id");
+                for (JmmNode grandChild : child.getChildren()) {
+                    path += "." + grandChild.get("id");
+                }
+                symbolTable.addImport(path);
+            } else {
+                visit(child, null);
+            }
+        }
+        return null;
+    }
+
+    private Void dealWithClass(JmmNode node, Void arg) {
+        symbolTable.setClassName(node.get("id"));
+        for (JmmNode child : node.getChildren()) {
+            if (child.getKind().equals("Var")) {
+                symbolTable.addField(
+                        child.get("id"),
+                        new Symbol(getType(child.getChildren().get(0)), child.get("id")));
+            }
+            else {
+                visit(child, null);
+            }
+        }
+        return null;
+    }
+
+    private Void dealWithExtends(JmmNode node, Void arg) {
+        symbolTable.setSuper(node.get("id"));
+        return null;
+    }
+
+    private Void dealWithInstanceMethod(JmmNode node, Void arg) {
+        SymbolTableMethod method = new SymbolTableMethod(node.get("id"));
+        for (JmmNode child : node.getChildren()) {
+            if (child.getKind().equals("ReturnType")) {
+                method.setReturnType(getType(child.getChildren().get(0)));
+            } else if (child.getKind().equals("ArgumentObject")) {
+                method.addParameter(child.get("id"), getType(child.getChildren().get(0)));
+            } else if (child.getKind().equals("Var")) {
+                method.addLocalVariable(child.get("id"), getType(child.getChildren().get(0)));
+            }
+        }
+        symbolTable.addMethod(method);
+        return null;
+    }
+
+    private Void dealWithMainMethod(JmmNode node, Void arg) {
+        SymbolTableMethod method = new SymbolTableMethod("main");
+        method.setReturnType(new Type("void", false));
+        method.addParameter("args", new Type("String", true));
+        for (JmmNode child : node.getChildren()) {
+            if (child.getKind().equals("Var")) {
+                method.addLocalVariable(child.get("id"), getType(child.getChildren().get(0)));
+            }
+        }
+        symbolTable.addMethod(method);
+        return null;
+    }
+
+    private Type getType(JmmNode node) {
+        return new Type(node.get("id"), node.getChildren().size() > 0);
+    }
+}
