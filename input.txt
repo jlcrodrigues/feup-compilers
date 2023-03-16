@@ -6,6 +6,9 @@ class Fac extends FacInterface{
 
     public int computeFac ( int num , boolean stop){
         int num_aux ;
+        int a;
+        a = j+1;
+        arr[a] = temp;
         if ( !(num < 1))
             num_aux = 1;
         else
