@@ -20,7 +20,7 @@ importDeclaration : 'import' id = ID (subimportDeclaration)* ';' #Import;
 subimportDeclaration : '.' id = ID #SubImport;
 
 classDeclaration :
-    'class' id = ID (classExtension)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' #Class;
+    ('public')? 'class' id = ID (classExtension)? '{' (varDeclaration)* (instanceMethodDeclaration)* (mainMethodDeclaration)? (instanceMethodDeclaration)*'}' #Class;
 
 classExtension : 'extends' id = ID #Extends;
 
@@ -64,6 +64,8 @@ elseStatement : 'else' statement #Else;
 
 expression :
     '(' expression ')' #Parentheses
+    | expression op = ('++' | '--') #UnaryOp
+    | op = ('++' | '--') expression #UnaryOp
     | '!' expression #Negate
     | expression op = ('*' | '/') expression #BinaryOp
     | expression op = ('+' | '-') expression #BinaryOp
@@ -73,7 +75,8 @@ expression :
     | expression op = '||' expression #BinaryOp
     | expression '[' expression ']' #ArrayAccess
     | expression '.' 'length' #MemberAccessLength
-    | expression ('.' id = ID)+ '(' (expression (',' expression)*)? ')' #MethodCall
+    | expression ('.' id = ID)+ #ChainMethods
+    | expression '(' (expression (',' expression)*)? ')' #MethodCall
     //| 'new' type isArray #NewArray
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
