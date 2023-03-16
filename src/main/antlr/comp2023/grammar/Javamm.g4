@@ -73,7 +73,7 @@ expression :
     | expression op = '||' expression #BinaryOp
     | expression '[' expression ']' #ArrayAccess
     | expression '.' 'length' #MemberAccessLength
-    | expression '.' id = ID '(' (expression (',' expression)*)? ')' #MethodCall
+    | expression ('.' id = ID)+ '(' (expression (',' expression)*)? ')' #MethodCall
     //| 'new' type isArray #NewArray
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
