@@ -55,7 +55,7 @@ statement :
     | 'while' '(' condition ')' statement #While
     | expression ';' #ExpressionStatement
     | id = ID '=' expression ';' #Assignment
-    | id = ID isArray? '=' expression ';' #ArrayAssignment
+    | id = ID '[' expression ']' '=' expression ';' #ArrayAssignment
     ;
 
 condition : expression;
