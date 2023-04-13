@@ -168,4 +168,36 @@ public class MySemanticTest {
         JmmSemanticsResult result = getResult(code);
         //assert result.getReports().size() == 1;
     }
+
+    @Test
+    public void testMethodCall() {
+        String code = "class Foo { public int foo(int a) { int a; foo(a); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testMethodCallWrong() {
+        String code = "class Foo { public int foo(int a) { bool b; foo(b); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testImportedMethods() {
+        String code = "import java.io; class Foo { public int foo() { java.io.print(1); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testNotImportedMethods() {
+        String code = "import java.hello; class Foo { public int foo() { java.io.print(1); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
 }

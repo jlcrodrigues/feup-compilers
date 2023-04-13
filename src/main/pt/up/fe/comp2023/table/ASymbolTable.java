@@ -18,7 +18,7 @@ public class ASymbolTable implements SymbolTable {
 
     public ASymbolTable() {
         className = "";
-        superName = "";
+        superName = "java.lang.Object";
         importedClasses = new ArrayList<String>();
         fields = new HashMap<String, Symbol>();
         methods = new HashMap<String, SymbolTableMethod>();

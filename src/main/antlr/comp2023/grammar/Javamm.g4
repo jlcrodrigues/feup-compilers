@@ -76,12 +76,10 @@ expression :
     | expression op = '&&' expression #BinaryOp
     | expression op = '||' expression #BinaryOp
     | expression '[' expression ']' #ArrayAccess
-    | expression '.' 'length' #MemberAccessLength //TODO
-    | expression ('.' id = ID)+ #ChainMethods //TODO
-    | expression '(' (expression (',' expression)*)? ')' #MethodCall //TODO
-    //| 'new' type isArray #NewArray
-    | 'new' 'int' '['expression']' #NewArray //TODO
-    | 'new' id = ID '(' ')' #NewObject //TODO
+    | expression '.' 'length' #MemberAccessLength
+    | id = ID methodChain '(' (expression (',' expression)*)? ')' #MethodCall
+    | 'new' 'int' '['expression']' #NewArray
+    | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal
     | value = 'true' #Literal
     | value = 'false' #Literal
@@ -89,4 +87,5 @@ expression :
     | value = 'this' #Literal
     ;
 
-
+methodChain: chainSegment*;
+chainSegment: '.' id = ID;
