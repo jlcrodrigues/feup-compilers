@@ -112,4 +112,20 @@ public class MySemanticTest {
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
     }
+
+    @Test
+    public void testOperationTypes() {
+        String code = "class Foo { public int foo() {int a; 1 + false; 2 > false; 2 || false;  a + 2; false || true; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 3;
+    }
+
+    @Test
+    public void testUnaryOp() {
+        String code = "class Foo { public int foo() { int a; a++; false++; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
 }

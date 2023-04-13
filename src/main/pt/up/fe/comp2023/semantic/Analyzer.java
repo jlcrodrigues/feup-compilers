@@ -68,7 +68,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Var")) continue;
             if (child.getKind().equals("ReturnObject")) {
-                Type returnType = expressionVisitor.visit(child.getChildren().get(0), null);
+                Type returnType = expressionVisitor.visit(child.getChildren().get(0), node.get("id"));
                 Type methodType = analysis.getSymbolTable().getReturnType(node.get("id"));
                 if (!returnType.equals(methodType)) {
                     analysis.addReport(child.getChildren().get(0), "Return type of method " + node.get("id") + " is " + methodType + " but found " + returnType);
@@ -80,7 +80,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
     }
 
     private Void dealWithCondition(JmmNode node, String method) {
-        Type conditionType = expressionVisitor.visit(node.getChildren().get(0), null);
+        Type conditionType = expressionVisitor.visit(node.getChildren().get(0), method);
         if (!conditionType.getName().equals("boolean")) {
             analysis.addReport(node.getChildren().get(0),
                     "Condition must be of type boolean but found " + conditionType.getName());
@@ -89,7 +89,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
     }
 
     private Void dealWithExpressionStatement(JmmNode node, String method) {
-        expressionVisitor.visit(node.getChildren().get(0), null);
+        expressionVisitor.visit(node.getChildren().get(0), method);
         return null;
     }
 
@@ -103,7 +103,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
                 return null;
             }
         }
-        Type type = expressionVisitor.visit(node.getChildren().get(0), null);
+        Type type = expressionVisitor.visit(node.getChildren().get(0), method);
 
         if (!fieldType.equals(type)) {
             analysis.addReport(node.getChildren().get(0),
@@ -126,13 +126,13 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             analysis.addReport(node.getChildren().get(0),
                     "Array access over non-array: " + node.get("id"));
         }
-        Type indexType = expressionVisitor.visit(node.getChildren().get(0), null);
+        Type indexType = expressionVisitor.visit(node.getChildren().get(0), method);
         if (!indexType.getName().equals("int")) {
             analysis.addReport(node.getChildren().get(0),
                     "Array index must be of type int but found " + indexType.getName());
         }
 
-        Type type = expressionVisitor.visit(node.getChildren().get(1), null);
+        Type type = expressionVisitor.visit(node.getChildren().get(1), method);
         if (!fieldType.getName().equals(type.getName())) {
             analysis.addReport(node.getChildren().get(0),
                     "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());

@@ -6,7 +6,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
-public class ExpressionVisitor extends AJmmVisitor<Void, Type> {
+public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     Analysis analysis;
 
     public ExpressionVisitor(Analysis analysis) {
@@ -31,14 +31,14 @@ public class ExpressionVisitor extends AJmmVisitor<Void, Type> {
         addVisit("Variable", this::dealWithVariable);
     }
 
-    protected Void defaultVisit(JmmNode node, Void arg) {
-        visitAllChildren(node, null);
+    protected Void defaultVisit(JmmNode node, String method) {
+        visitAllChildren(node, method);
         return null;
     }
 
-    private Type dealWithUnary(JmmNode node, Void arg) {
-       Type type = visit(node.getChildren().get(0), null);
-         if (type.getName() == "int") {
+    private Type dealWithUnary(JmmNode node, String method) {
+       Type type = visit(node.getChildren().get(0), method);
+         if (type.getName().equals("int") && !type.isArray()) {
               return new Type("int", false);
          }
          else {
@@ -47,8 +47,8 @@ public class ExpressionVisitor extends AJmmVisitor<Void, Type> {
          }
     }
 
-    private Type dealWithNegate(JmmNode node, Void arg) {
-        Type type = visit(node.getChildren().get(0), null);
+    private Type dealWithNegate(JmmNode node, String method) {
+        Type type = visit(node.getChildren().get(0), method);
         if (!type.equals("boolean")) {
             return new Type("int", false);
         }
@@ -58,38 +58,37 @@ public class ExpressionVisitor extends AJmmVisitor<Void, Type> {
         }
     }
 
-    private Type dealWithBinaryOp(JmmNode node, Void arg) {
-        Type left = visit(node.getChildren().get(0), null);
-        Type right = visit(node.getChildren().get(1), null);
+    private Type dealWithBinaryOp(JmmNode node, String method) {
+        Type left = visit(node.getChildren().get(0), method);
+        Type right = visit(node.getChildren().get(1), method);
         String op = node.get("op");
         if (left == null || right == null) {
             analysis.addReport(node, "Invalid operands for " + op + ".");
             return null;
-        }
-        else if (right.isArray() || left.isArray()) {
+        } else if (right.isArray() || left.isArray()) {
             analysis.addReport(node, "Operator " + op + " used with an array " + left.getName() + " and "
                     + right.getName());
             return null;
         }
-        if (op.equals("*") || op.equals("/") || op.equals("+") || op.equals("-")) {
+        if (op.equals("||") || op.equals("&&")) {
+            if (!left.getName().equals("boolean") || !right.getName().equals("boolean")) {
+                analysis.addReport(node, "Operator " + op + " used with conflicting types " + left.getName() + " and "
+                        + right.getName());
+            }
+        }
+        else {
             if (!left.getName().equals("int") || !right.getName().equals("int")) {
                 analysis.addReport(node, "Operator " + op + " used with conflicting types " + left.getName() + " and "
                         + right.getName());
             }
             return new Type("int", false);
         }
-        else {
-            if (!left.getName().equals("boolean") || !right.getName().equals("boolean")) {
-                analysis.addReport(node, "Operator " + op + " used with conflicting types " + left.getName() + " and "
-                        + right.getName());
-            }
-            return new Type("boolean", false);
-        }
+        return left;
     }
 
-    private Type dealWithArrayAccess(JmmNode node, Void arg) {
-        Type array = visit(node.getChildren().get(0), null);
-        Type index = visit(node.getChildren().get(1), null);
+    private Type dealWithArrayAccess(JmmNode node, String method) {
+        Type array = visit(node.getChildren().get(0), method);
+        Type index = visit(node.getChildren().get(1), method);
         if (array == null || index == null) {
             analysis.addReport(node, "Invalid array access");
             return null;
@@ -105,7 +104,7 @@ public class ExpressionVisitor extends AJmmVisitor<Void, Type> {
         return new Type(array.getName(), false);
     }
 
-    private Type dealWithLiteral(JmmNode node, Void arg) {
+    private Type dealWithLiteral(JmmNode node, String method) {
         if (node.get("value").equals("true") || node.get("value").equals("false")) {
             return new Type("boolean", false);
         }
@@ -117,7 +116,16 @@ public class ExpressionVisitor extends AJmmVisitor<Void, Type> {
         }
     }
 
-    private Type dealWithVariable(JmmNode node, Void arg) {
-        return analysis.getSymbolTable().getFieldType(node.get("id"));
+    private Type dealWithVariable(JmmNode node, String method) {
+        Type type = analysis.getSymbolTable().getFieldType(node.get("id"));
+        if (type == null) {
+            type = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
+            if (type == null) {
+                analysis.addReport(node.getChildren().get(0),
+                        "Field " + node.get("id") + " not found");
+                return null;
+            }
+        }
+        return type;
     }
 }
