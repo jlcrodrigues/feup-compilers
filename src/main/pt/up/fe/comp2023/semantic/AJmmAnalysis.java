@@ -1,4 +1,4 @@
-package pt.up.fe.comp2023;
+package pt.up.fe.comp2023.semantic;
 
 import java.util.List;
 
@@ -12,7 +12,10 @@ import pt.up.fe.comp2023.table.SymbolTableGenerator;
 public class AJmmAnalysis implements JmmAnalysis {
     @Override
     public JmmSemanticsResult semanticAnalysis(JmmParserResult jmmParserResult) {
-        SymbolTable symbolTable = new SymbolTableGenerator().getSymbolTable(jmmParserResult.getRootNode());
-        return new JmmSemanticsResult(jmmParserResult, symbolTable, List.of());
+        ASymbolTable symbolTable = new SymbolTableGenerator().getSymbolTable(jmmParserResult.getRootNode());
+        Analyzer analyzer = new Analyzer(symbolTable);
+        analyzer.analyze(jmmParserResult.getRootNode());
+
+        return new JmmSemanticsResult(jmmParserResult, symbolTable, analyzer.getReports());
     }
 }

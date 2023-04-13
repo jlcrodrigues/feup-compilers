@@ -101,4 +101,7 @@ public class ASymbolTable implements SymbolTable {
         methods.put(method.getName(), method);
     }
 
+    public Type getFieldType(String name) {
+        return fields.get(name).getType();
+    }
 }

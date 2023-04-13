@@ -74,17 +74,17 @@ expression :
     | expression op = '&&' expression #BinaryOp
     | expression op = '||' expression #BinaryOp
     | expression '[' expression ']' #ArrayAccess
-    | expression '.' 'length' #MemberAccessLength
-    | expression ('.' id = ID)+ #ChainMethods
-    | expression '(' (expression (',' expression)*)? ')' #MethodCall
+    | expression '.' 'length' #MemberAccessLength //TODO
+    | expression ('.' id = ID)+ #ChainMethods //TODO
+    | expression '(' (expression (',' expression)*)? ')' #MethodCall //TODO
     //| 'new' type isArray #NewArray
-    | 'new' 'int' '['expression']' #NewArray
-    | 'new' id = ID '(' ')' #NewObject
+    | 'new' 'int' '['expression']' #NewArray //TODO
+    | 'new' id = ID '(' ')' #NewObject //TODO
     | value = INT #Literal
     | value = 'true' #Literal
     | value = 'false' #Literal
     | id = ID #Variable
-    | value = 'this' #Literal
+    | value = 'this' #Literal //TODO
     ;
 
 
