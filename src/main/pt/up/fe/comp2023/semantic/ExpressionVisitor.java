@@ -32,6 +32,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         addVisit("Literal", this::dealWithLiteral);
         addVisit("Variable", this::dealWithVariable);
         addVisit("MethodCall", this::dealWithMethodCall);
+        addVisit("ImportedMethodCall", this::dealWithMethodCall);
         addVisit("MemberAccessLength", this::dealWithMemberAccessLength);
         addVisit("NewArray", this::dealWithNewArray);
         addVisit("NewObject", this::dealWithNewObject);
@@ -130,7 +131,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         if (type == null) {
             type = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
             if (type == null) {
-                analysis.addReport(node.getChildren().get(0),
+                analysis.addReport(node,
                         "Field " + node.get("id") + " not found");
             }
         }
@@ -139,16 +140,10 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithMethodCall(JmmNode node, String _method) {
         String methodName = node.get("id");
-        if (checkChainedMethod(node))
+        if (checkMethod(node, _method))
             return null;
 
         SymbolTableMethod method = analysis.getSymbolTable().getMethod(methodName);
-        if (method == null) {
-            if (analysis.getSymbolTable().getSuper().equals("java.lang.Object")) {
-                return null;
-            }
-            analysis.addReport(node, "Method " + methodName + " not found");
-        }
 
         List<Symbol> args  = method.getParameters();
         Type returnType = analysis.getSymbolTable().getMethod(node.get("id")).getReturnType();
@@ -168,12 +163,30 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         return returnType;
     }
 
-    private boolean checkChainedMethod(JmmNode node)  {
+    private boolean checkMethod(JmmNode node, String _method)  {
         String methodName = node.get("id");
+
+        if (!analysis.getSymbolTable().getSuper().equals("java.lang.Object")) {
+            return true;
+        }
+
+        Type methodType = analysis.getSymbolTable().getVariableType(methodName, _method);
+        if (methodType != null) {
+            List<String> imports = analysis.getSymbolTable().getImports();
+            if (!imports.contains(methodType.getName())) {
+                analysis.addReport(node, "Method " + methodName + " not found");
+                return true;
+            }
+            return true;
+        }
         List<JmmNode> chains = node.getChildren().get(0).getChildren();
         if (chains.size() > 0) {
             String chain = methodName;
             for (int i = 0; i < chains.size() - 1; i++) {
+                if (!chains.get(i).hasAttribute("id")) {
+                    analysis.addReport(node, "Method chain " + methodName + "malformed");
+                    return true;
+                }
                 chain += "." + chains.get(i).get("id");
             }
             if (!analysis.getSymbolTable().getImports().contains(chain)) {

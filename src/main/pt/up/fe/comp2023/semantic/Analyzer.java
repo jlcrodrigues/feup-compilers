@@ -69,6 +69,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             if (child.getKind().equals("Var")) continue;
             if (child.getKind().equals("ReturnObject")) {
                 Type returnType = expressionVisitor.visit(child.getChildren().get(0), node.get("id"));
+                if (returnType == null) return null;
                 Type methodType = analysis.getSymbolTable().getReturnType(node.get("id"));
                 if (!returnType.equals(methodType)) {
                     analysis.addReport(child.getChildren().get(0), "Return type of method " + node.get("id") + " is " + methodType + " but found " + returnType);
@@ -114,6 +115,14 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             }
         }
         else if (!fieldType.equals(type)) {
+            List<String> imports = analysis.getSymbolTable().getImports();
+            if (imports.contains(type.getName()) && imports.contains(fieldType.getName())) {
+                return null;
+            }
+            String superName = analysis.getSymbolTable().getSuper();
+            String className = analysis.getSymbolTable().getClassName();
+            if (superName.equals(fieldType.getName()) && className.equals(type.getName()))
+                return null;
             analysis.addReport(node.getChildren().get(0),
                     "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
         }
