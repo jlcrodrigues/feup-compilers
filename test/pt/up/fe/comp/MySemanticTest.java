@@ -87,4 +87,29 @@ public class MySemanticTest {
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
     }
+
+    @Test
+    public void testArrayAccess() {
+        // Array access is done over an array
+        String code = "class Foo { public int foo() { int a; a[0] = 1; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testArrayIndex() {
+        String code = "class Foo { public int foo() { int[] a; a[false] = 1; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testArrayOperations() {
+        String code = "class Foo { public int foo() { int[] a; a + 2; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
 }

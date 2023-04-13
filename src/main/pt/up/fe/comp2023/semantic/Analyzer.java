@@ -37,7 +37,9 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         addVisit("InstanceMethod", this::dealWithMethod);
         addVisit("MainMethod", this::dealWithMethod);
         addVisit("Condition", this::dealWithCondition);
+        addVisit("ExpressionStatement", this::dealWithExpressionStatement);
         addVisit("Assignment", this::dealWithAssignment);
+        addVisit("ArrayAssignment", this::dealWithArrayAssignment);
     }
 
     protected Void defaultVisit(JmmNode node, String method) {
@@ -86,6 +88,11 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         return null;
     }
 
+    private Void dealWithExpressionStatement(JmmNode node, String method) {
+        expressionVisitor.visit(node.getChildren().get(0), null);
+        return null;
+    }
+
     private Void dealWithAssignment(JmmNode node, String method) {
         Type fieldType = analysis.getSymbolTable().getFieldType(node.get("id"));
         if (fieldType == null) {
@@ -99,6 +106,34 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         Type type = expressionVisitor.visit(node.getChildren().get(0), null);
 
         if (!fieldType.equals(type)) {
+            analysis.addReport(node.getChildren().get(0),
+                    "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
+        }
+        return null;
+    }
+
+    private Void dealWithArrayAssignment(JmmNode node, String method) {
+        Type fieldType = analysis.getSymbolTable().getFieldType(node.get("id"));
+        if (fieldType == null) {
+            fieldType = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
+            if (fieldType == null) {
+                analysis.addReport(node.getChildren().get(0),
+                        "Field " + node.get("id") + " not found");
+                return null;
+            }
+        }
+        if (!fieldType.isArray()) {
+            analysis.addReport(node.getChildren().get(0),
+                    "Array access over non-array: " + node.get("id"));
+        }
+        Type indexType = expressionVisitor.visit(node.getChildren().get(0), null);
+        if (!indexType.getName().equals("int")) {
+            analysis.addReport(node.getChildren().get(0),
+                    "Array index must be of type int but found " + indexType.getName());
+        }
+
+        Type type = expressionVisitor.visit(node.getChildren().get(1), null);
+        if (!fieldType.getName().equals(type.getName())) {
             analysis.addReport(node.getChildren().get(0),
                     "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
         }
