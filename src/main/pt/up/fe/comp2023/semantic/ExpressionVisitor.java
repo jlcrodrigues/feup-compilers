@@ -109,7 +109,10 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             return new Type("boolean", false);
         }
         else if (node.get("value").equals("this")) {
-            return null;
+            if (analysis.getSymbolTable().getMethod(method).isStatic()) {
+                analysis.addReport(node, "'this' cannot be used this in a static method");
+            }
+            return new Type("this", false);
         }
         else {
             return new Type("int", false);

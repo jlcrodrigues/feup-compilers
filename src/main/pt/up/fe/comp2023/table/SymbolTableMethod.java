@@ -12,12 +12,14 @@ public class SymbolTableMethod {
     private Type returnType;
     private Map<String, Symbol> parameters;
     private Map<String, Symbol> localVariables;
+    private boolean isStatic;
 
     public SymbolTableMethod(String name) {
         this.name = name;
         this.returnType = null;
         this.parameters = new HashMap<String, Symbol>();
         this.localVariables = new HashMap<String, Symbol>();
+        this.isStatic = false;
     }
 
     public String getName() {
@@ -54,6 +56,14 @@ public class SymbolTableMethod {
 
     public void addParameter(String name, Type type) {
         parameters.put(name, new Symbol(type, name));
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setIsStatic(boolean isStatic) {
+        this.isStatic = isStatic;
     }
 
     public void addLocalVariable(String name, Type type) {

@@ -128,4 +128,44 @@ public class MySemanticTest {
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
     }
+
+    @Test
+    public void testThisStatic() {
+        String code = "class Foo { public static int foo() { this; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testThisNotStatic() {
+        String code = "class Foo { public int foo() { this; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testThisAssignment() {
+        String code = "class Foo { public int foo() { Foo a; a = this; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testThisAssignment2() {
+        String code = "class Foo { public int foo() { Bar a; a = this; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testThisAssignment3() {
+        String code = "class Foo extends Bar { public int foo() { FooBar a; Foo b; Bar c; a = this; b = this; c = this; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        //assert result.getReports().size() == 1;
+    }
 }

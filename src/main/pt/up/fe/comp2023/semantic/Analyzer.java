@@ -104,8 +104,16 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             }
         }
         Type type = expressionVisitor.visit(node.getChildren().get(0), method);
-
-        if (!fieldType.equals(type)) {
+        if (type.getName().equals("this")) {
+            if (!fieldType.getName().equals(analysis.getSymbolTable().getClassName())
+                    && !fieldType.getName().equals(analysis.getSymbolTable().getSuper())) {
+                analysis.addReport(node.getChildren().get(0),
+                        "Expected to find " + analysis.getSymbolTable().getClassName()
+                                + " or " + analysis.getSymbolTable().getSuper() + " but found " +
+                                fieldType.getName() + "in 'this assignment'");
+            }
+        }
+        else if (!fieldType.equals(type)) {
             analysis.addReport(node.getChildren().get(0),
                     "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
         }

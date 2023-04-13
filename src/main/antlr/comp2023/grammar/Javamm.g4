@@ -30,7 +30,9 @@ mainMethodDeclaration :
     ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (varDeclaration)* (statement)* '}' #MainMethod ;
 
 instanceMethodDeclaration :
-    ('public')? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
+    ('public')? staticMethod? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
+
+staticMethod: 'static';
 
 returnType : type;
 
@@ -84,7 +86,7 @@ expression :
     | value = 'true' #Literal
     | value = 'false' #Literal
     | id = ID #Variable
-    | value = 'this' #Literal //TODO
+    | value = 'this' #Literal
     ;
 
 
