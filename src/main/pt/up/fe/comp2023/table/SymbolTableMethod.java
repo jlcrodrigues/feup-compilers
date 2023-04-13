@@ -59,4 +59,14 @@ public class SymbolTableMethod {
     public void addLocalVariable(String name, Type type) {
         localVariables.put(name, new Symbol(type, name));
     }
+
+    public Type getFieldType(String name) {
+        if (parameters.containsKey(name)) {
+            return parameters.get(name).getType();
+        }
+        if (localVariables.containsKey(name)) {
+            return localVariables.get(name).getType();
+        }
+        return null;
+    }
 }

@@ -102,6 +102,14 @@ public class ASymbolTable implements SymbolTable {
     }
 
     public Type getFieldType(String name) {
-        return fields.get(name).getType();
+        if (fields.containsKey(name))
+            return fields.get(name).getType();
+        return null;
+    }
+
+    public SymbolTableMethod getMethod(String name) {
+        if (methods.containsKey(name))
+            return methods.get(name);
+        return null;
     }
 }

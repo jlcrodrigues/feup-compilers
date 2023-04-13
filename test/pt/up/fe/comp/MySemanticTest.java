@@ -55,4 +55,36 @@ public class MySemanticTest {
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
     }
+
+    @Test
+    public void testIf() {
+        String code = "class Foo { public int foo() { if (true) { } else { } return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testIfWrong() {
+        String code = "class Foo { public int foo() { if (2) { } else { } return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testAssignment() {
+        String code = "class Foo { public int foo() { int a; a = 1; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testAssignmentWrong() {
+        String code = "class Foo { public int foo() { int a; a = true; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
 }

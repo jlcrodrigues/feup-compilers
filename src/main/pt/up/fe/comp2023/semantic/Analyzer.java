@@ -10,7 +10,7 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp2023.table.ASymbolTable;
 
-public class Analyzer extends AJmmVisitor<Void, Void> {
+public class Analyzer extends AJmmVisitor<String, Void> {
     private Analysis analysis;
     private ExpressionVisitor expressionVisitor;
 
@@ -36,31 +36,33 @@ public class Analyzer extends AJmmVisitor<Void, Void> {
         addVisit("Class", this::dealWithClass);
         addVisit("InstanceMethod", this::dealWithMethod);
         addVisit("MainMethod", this::dealWithMethod);
+        addVisit("Condition", this::dealWithCondition);
+        addVisit("Assignment", this::dealWithAssignment);
     }
 
-    protected Void defaultVisit(JmmNode node, Void arg) {
-        visitAllChildren(node, null);
+    protected Void defaultVisit(JmmNode node, String method) {
+        visitAllChildren(node, method);
         return null;
     }
 
-    private Void dealWithProgram(JmmNode node, Void arg) {
+    private Void dealWithProgram(JmmNode node, String method) {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Import")) continue;
-            else visit(child, null);
+            else visit(child, method);
         }
         return null;
     }
 
-    private Void dealWithClass(JmmNode node, Void arg) {
+    private Void dealWithClass(JmmNode node, String method) {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Extends")) continue;
             else if (child.getKind().equals("Var")) continue;
-            else visit(child, null);
+            else visit(child, method);
         }
         return null;
     }
 
-    private Void dealWithMethod(JmmNode node, Void arg) {
+    private Void dealWithMethod(JmmNode node, String _method) {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Var")) continue;
             if (child.getKind().equals("ReturnObject")) {
@@ -70,9 +72,36 @@ public class Analyzer extends AJmmVisitor<Void, Void> {
                     analysis.addReport(child.getChildren().get(0), "Return type of method " + node.get("id") + " is " + methodType + " but found " + returnType);
                 }
             }
-            else visit(child, null);
+            else visit(child, node.get("id"));
         }
         return null;
     }
 
+    private Void dealWithCondition(JmmNode node, String method) {
+        Type conditionType = expressionVisitor.visit(node.getChildren().get(0), null);
+        if (!conditionType.getName().equals("boolean")) {
+            analysis.addReport(node.getChildren().get(0),
+                    "Condition must be of type boolean but found " + conditionType.getName());
+        }
+        return null;
+    }
+
+    private Void dealWithAssignment(JmmNode node, String method) {
+        Type fieldType = analysis.getSymbolTable().getFieldType(node.get("id"));
+        if (fieldType == null) {
+            fieldType = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
+            if (fieldType == null) {
+                analysis.addReport(node.getChildren().get(0),
+                        "Field " + node.get("id") + " not found");
+                return null;
+            }
+        }
+        Type type = expressionVisitor.visit(node.getChildren().get(0), null);
+
+        if (!fieldType.equals(type)) {
+            analysis.addReport(node.getChildren().get(0),
+                    "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
+        }
+        return null;
+    }
 }
