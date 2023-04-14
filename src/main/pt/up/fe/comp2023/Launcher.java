@@ -5,9 +5,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.ReportType;
+import pt.up.fe.comp2023.Jasmin.AJasminBackend;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -56,9 +60,39 @@ public class Launcher {
 
         System.out.println("Symbol Table:");
         System.out.println(result.getSymbolTable());
-        System.out.println(result.getSymbolTable().print());
 
-        // ... add remaining stages
+        // Parse stage
+        OllirResult ollirResult = new OllirResult("""
+                 import io;
+                 protected static final myClass extends superClass{
+                \t.construct myClass().V {
+                \t\tinvokespecial(this, "<init>").V;
+                \t}
+                \t
+                \t.method public check(A.array.classArray, b.Foo).bool {
+                \t\tall.bool :=.bool 0.bool;
+                \t\t
+                \t\tc.Foo :=.Foo $2.b.Foo;
+                \t\tinvokevirtual(c.Foo,"test",$1.A.array.classArray).V;
+
+                \t\tb.bool :=.bool !.bool true.bool;
+
+
+                \t\tret.bool all.bool;
+                \t}
+                }""",null);
+
+
+        // Check if there are parsing errors
+        TestUtils.noErrors(ollirResult.getReports());
+
+        AJasminBackend jasmin = new AJasminBackend();
+
+        JasminResult jasminResult = jasmin.toJasmin(ollirResult);
+
+        TestUtils.noErrors(jasminResult.getReports());
+
+
     }
 
     private static Map<String, String> parseArgs(String[] args) {
