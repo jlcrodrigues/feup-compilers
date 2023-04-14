@@ -18,7 +18,7 @@ public class ASymbolTable implements SymbolTable {
 
     public ASymbolTable() {
         className = "";
-        superName = "";
+        superName = "java.lang.Object";
         importedClasses = new ArrayList<String>();
         fields = new HashMap<String, Symbol>();
         methods = new HashMap<String, SymbolTableMethod>();
@@ -101,4 +101,23 @@ public class ASymbolTable implements SymbolTable {
         methods.put(method.getName(), method);
     }
 
+    public Type getFieldType(String name) {
+        if (fields.containsKey(name))
+            return fields.get(name).getType();
+        return null;
+    }
+
+    public Type getVariableType(String name, String methodName) {
+        Type type = getFieldType(name);
+        if (type == null) {
+            return methods.get(methodName).getFieldType(name);
+        }
+        return type;
+    }
+
+    public SymbolTableMethod getMethod(String name) {
+        if (methods.containsKey(name))
+            return methods.get(name);
+        return null;
+    }
 }

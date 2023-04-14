@@ -64,7 +64,10 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
     private Void dealWithInstanceMethod(JmmNode node, Void arg) {
         SymbolTableMethod method = new SymbolTableMethod(node.get("id"));
         for (JmmNode child : node.getChildren()) {
-            if (child.getKind().equals("ReturnType")) {
+            if (child.getKind().equals("StaticMethod")) {
+                method.setIsStatic(true);
+            }
+            else if (child.getKind().equals("ReturnType")) {
                 method.setReturnType(getType(child.getChildren().get(0)));
             } else if (child.getKind().equals("ArgumentObject")) {
                 method.addParameter(child.get("id"), getType(child.getChildren().get(0)));

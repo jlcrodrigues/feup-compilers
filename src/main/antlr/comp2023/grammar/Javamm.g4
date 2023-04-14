@@ -30,7 +30,9 @@ mainMethodDeclaration :
     ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (varDeclaration)* (statement)* '}' #MainMethod ;
 
 instanceMethodDeclaration :
-    ('public')? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
+    ('public')? staticMethod? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
+
+staticMethod: 'static';
 
 returnType : type;
 
@@ -77,7 +79,7 @@ expression :
     | expression '.' 'length' #MemberAccessLength
     | expression ('.' id = ID)+ #ChainMethods
     | expression '(' (expression (',' expression)*)? ')' #MethodCall
-    //| 'new' type isArray #NewArray
+    | id = ID methodChain '(' (expression (',' expression)*)? ')' #ImportedMethodCall
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal
@@ -87,4 +89,5 @@ expression :
     | value = 'this' #Literal
     ;
 
-
+methodChain: chainSegment*;
+chainSegment: '.' id = ID;
