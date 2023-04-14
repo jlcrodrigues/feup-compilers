@@ -15,6 +15,7 @@ public class JasminGenerator {
     public String generate() {
         generateClassDeclaration();
         generateSuperDeclaration();
+        generateFieldsDeclaration();
         return builder.toString();
     }
 
@@ -27,5 +28,17 @@ public class JasminGenerator {
     private void generateSuperDeclaration() {
         String superClass = classUnit.getSuperClass() == null ? "java/lang/Object" : classUnit.getSuperClass();
         builder.append(".super ").append(superClass).append("\n");
+    }
+
+    private void generateFieldsDeclaration() {
+        classUnit.getFields().forEach(field -> {
+            final String fieldAccessModifier = JasminUtils.getAccessModifier(field.getFieldAccessModifier());
+            final String fieldType = JasminUtils.getFieldType(field.getFieldType());
+            builder.append(".field ").append(fieldAccessModifier).append(" ");
+            if (field.isStaticField()) builder.append("static ");
+            if (field.isFinalField()) builder.append("final ");
+            builder.append(field.getFieldName()).append(" ").append(fieldType).append("\n");
+        });
+        builder.append("\n");
     }
 }

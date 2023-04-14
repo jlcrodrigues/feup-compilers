@@ -65,11 +65,16 @@ public class Launcher {
         OllirResult ollirResult = new OllirResult("""
                  import io;
                  protected static final myClass extends superClass{
+                 
+                 .field private static final a.bool;
+                 .field protected b.String;
                 \t.construct myClass().V {
                 \t\tinvokespecial(this, "<init>").V;
                 \t}
                 \t
                 \t.method public check(A.array.classArray, b.Foo).bool {
+                
+                
                 \t\tall.bool :=.bool 0.bool;
                 \t\t
                 \t\tc.Foo :=.Foo $2.b.Foo;
