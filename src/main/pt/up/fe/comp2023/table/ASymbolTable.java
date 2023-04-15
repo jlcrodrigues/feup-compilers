@@ -110,7 +110,7 @@ public class ASymbolTable implements SymbolTable {
     public Type getVariableType(String name, String methodName) {
         Type type = getFieldType(name);
         if (type == null) {
-            if (methods.containsKey(name))
+            if (methods.containsKey(methodName))
                 return methods.get(methodName).getFieldType(name);
         }
         return type;
