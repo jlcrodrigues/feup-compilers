@@ -155,6 +155,10 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             analysis.addReport(node.getChildren().get(0),
                     "Array index must be of type int but found " + indexType.getName());
         }
+        if (indexType.isArray()) {
+            analysis.addReport(node.getChildren().get(0),
+                    "Array index can't be an array");
+        }
 
         Type type = expressionVisitor.visit(node.getChildren().get(1), method);
         if (!fieldType.getName().equals(type.getName())) {
