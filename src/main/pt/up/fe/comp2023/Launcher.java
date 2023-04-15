@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.ReportType;
+import pt.up.fe.comp2023.ollir.JmmOptimizer;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -39,7 +41,6 @@ public class Launcher {
         JmmParserResult parserResult = parser.parse(code, parser.getDefaultRule(),config);
 
         // Check if there are parsing errors
-
         long errorCount = parserResult.getReports().stream()
                 .filter(report -> report.getType() == ReportType.ERROR)
                 .peek(report -> System.out.println("Error report: " + report))
@@ -54,10 +55,17 @@ public class Launcher {
 
         JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
 
+        /*
         System.out.println("Symbol Table:");
         System.out.println(result.getSymbolTable());
         System.out.println(result.getSymbolTable().print());
+        */
 
+        var optimizer = new JmmOptimizer();
+
+        OllirResult ollirResult = optimizer.toOllir(result);
+
+        System.out.println(ollirResult.getOllirCode());
         // ... add remaining stages
     }
 
