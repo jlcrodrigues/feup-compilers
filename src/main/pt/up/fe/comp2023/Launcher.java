@@ -60,6 +60,9 @@ public class Launcher {
         System.out.println(result.getSymbolTable().print());
 
         System.out.println("Reports:" + result.getReports().size());
+        for (var report : result.getReports()) {
+            System.out.println(report);
+        }
 
         // ... add remaining stages
     }

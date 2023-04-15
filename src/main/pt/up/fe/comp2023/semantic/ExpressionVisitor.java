@@ -58,7 +58,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     private Type dealWithNegate(JmmNode node, String method) {
         Type type = visit(node.getChildren().get(0), method);
         if (type == null || !type.equals("boolean")) {
-            analysis.addReport(node, "Negation operator ! can only be applied to bool");
+            //analysis.addReport(node, "Negation operator ! can only be applied to bool");
             return null;
         }
         else {
@@ -71,7 +71,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         Type right = visit(node.getChildren().get(1), method);
         String op = node.get("op");
         if (left == null || right == null) {
-            analysis.addReport(node, "Invalid operands for " + op + ".");
+            //analysis.addReport(node, "Invalid operands for " + op + ".");
             return null;
         } else if (right.isArray() || left.isArray()) {
             analysis.addReport(node, "Operator " + op + " used with an array " + left.getName() + " and "

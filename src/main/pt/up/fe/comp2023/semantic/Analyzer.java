@@ -90,7 +90,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
     private Void dealWithCondition(JmmNode node, String method) {
         Type conditionType = expressionVisitor.visit(node.getChildren().get(0), method);
         if (conditionType == null) {
-            analysis.addReport(node.getChildren().get(0), "Condition can't be null");
+            //analysis.addReport(node.getChildren().get(0), "Condition can't be null");
             return null;
         }
         if (!conditionType.getName().equals("boolean")) {
