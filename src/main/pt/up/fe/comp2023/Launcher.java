@@ -59,6 +59,8 @@ public class Launcher {
         System.out.println(result.getSymbolTable());
         System.out.println(result.getSymbolTable().print());
 
+        System.out.println("Reports:" + result.getReports().size());
+
         // ... add remaining stages
     }
 

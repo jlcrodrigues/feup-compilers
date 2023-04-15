@@ -35,7 +35,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         addVisit("Program", this::dealWithProgram);
         addVisit("Class", this::dealWithClass);
         addVisit("InstanceMethod", this::dealWithMethod);
-        addVisit("MainMethod", this::dealWithMethod);
+        addVisit("MainMethod", this::dealWithMainMethod);
         addVisit("Condition", this::dealWithCondition);
         addVisit("ExpressionStatement", this::dealWithExpressionStatement);
         addVisit("Assignment", this::dealWithAssignment);
@@ -43,8 +43,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
     }
 
     protected Void defaultVisit(JmmNode node, String method) {
-        visitAllChildren(node, method);
-        return null;
+        return visitAllChildren(node, method);
     }
 
     private Void dealWithProgram(JmmNode node, String method) {
@@ -80,8 +79,20 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         return null;
     }
 
+    private Void dealWithMainMethod(JmmNode node, String _method) {
+        for (JmmNode child : node.getChildren()) {
+            if (child.getKind().equals("Var")) continue;
+            else visit(child, "main");
+        }
+        return null;
+    }
+
     private Void dealWithCondition(JmmNode node, String method) {
         Type conditionType = expressionVisitor.visit(node.getChildren().get(0), method);
+        if (conditionType == null) {
+            analysis.addReport(node.getChildren().get(0), "Condition can't be null");
+            return null;
+        }
         if (!conditionType.getName().equals("boolean")) {
             analysis.addReport(node.getChildren().get(0),
                     "Condition must be of type boolean but found " + conditionType.getName());
@@ -105,6 +116,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             }
         }
         Type type = expressionVisitor.visit(node.getChildren().get(0), method);
+        if (type == null) return null;
         if (type.getName().equals("this")) {
             if (!fieldType.getName().equals(analysis.getSymbolTable().getClassName())
                     && !fieldType.getName().equals(analysis.getSymbolTable().getSuper())) {

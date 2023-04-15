@@ -12,7 +12,9 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     Analysis analysis;
 
     public ExpressionVisitor(Analysis analysis) {
+        super();
         this.analysis = analysis;
+        setDefaultVisit(this::defaultVisit);
     }
 
     public Type getType(JmmNode node) {
@@ -38,9 +40,8 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         addVisit("NewObject", this::dealWithNewObject);
     }
 
-    protected Void defaultVisit(JmmNode node, String method) {
-        visitAllChildren(node, method);
-        return null;
+    protected Type defaultVisit(JmmNode node, String method) {
+        return visit(node.getChildren().get(0));
     }
 
     private Type dealWithUnary(JmmNode node, String method) {
@@ -56,12 +57,12 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithNegate(JmmNode node, String method) {
         Type type = visit(node.getChildren().get(0), method);
-        if (!type.equals("boolean")) {
-            return new Type("int", false);
-        }
-        else {
+        if (type == null || !type.equals("boolean")) {
             analysis.addReport(node, "Negation operator ! can only be applied to bool");
             return null;
+        }
+        else {
+            return new Type("boolean", false);
         }
     }
 
@@ -127,13 +128,10 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     }
 
     private Type dealWithVariable(JmmNode node, String method) {
-        Type type = analysis.getSymbolTable().getFieldType(node.get("id"));
+        Type type = analysis.getSymbolTable().getVariableType(node.get("id"), method);
         if (type == null) {
-            type = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
-            if (type == null) {
-                analysis.addReport(node,
-                        "Field " + node.get("id") + " not found");
-            }
+            analysis.addReport(node,
+                    "Field " + node.get("id") + " not found");
         }
         return type;
     }
