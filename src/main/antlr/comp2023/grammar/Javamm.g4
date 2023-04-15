@@ -78,8 +78,7 @@ expression :
     | expression '[' expression ']' #ArrayAccess
     | expression '.' 'length' #MemberAccessLength
     | expression ('.' id = ID)+ #ChainMethods
-    | expression '(' (expression (',' expression)*)? ')' #MethodCall
-    | id = ID methodChain '(' (expression (',' expression)*)? ')' #ImportedMethodCall
+    | expression '(' ( expression ( ',' expression )* )? ')' #MethodCall
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal
@@ -88,6 +87,3 @@ expression :
     | id = ID #Variable
     | value = 'this' #Literal
     ;
-
-methodChain: chainSegment*;
-chainSegment: '.' id = ID;

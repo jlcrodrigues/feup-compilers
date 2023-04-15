@@ -1,5 +1,7 @@
 package pt.up.fe.comp2023.table;
 
+import java.util.List;
+
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
@@ -29,11 +31,10 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
     private Void dealWithProgram(JmmNode node, Void arg) {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Import")) {
-                String path = child.get("id");
-                for (JmmNode grandChild : child.getChildren()) {
-                    path += "." + grandChild.get("id");
-                }
-                symbolTable.addImport(path);
+                List<JmmNode> gdChildren = child.getChildren();
+                if (gdChildren.size() > 0)
+                    symbolTable.addImport(gdChildren.get(gdChildren.size() - 1).get("id"));
+                else symbolTable.addImport(child.get("id"));
             } else {
                 visit(child, null);
             }

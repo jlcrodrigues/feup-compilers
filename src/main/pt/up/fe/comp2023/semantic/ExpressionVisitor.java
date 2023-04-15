@@ -34,7 +34,6 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         addVisit("Literal", this::dealWithLiteral);
         addVisit("Variable", this::dealWithVariable);
         addVisit("MethodCall", this::dealWithMethodCall);
-        addVisit("ImportedMethodCall", this::dealWithMethodCall);
         addVisit("MemberAccessLength", this::dealWithMemberAccessLength);
         addVisit("NewArray", this::dealWithNewArray);
         addVisit("NewObject", this::dealWithNewObject);
@@ -136,23 +135,23 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         return type;
     }
 
-    private Type dealWithMethodCall(JmmNode node, String _method) {
-        String methodName = node.get("id");
-        if (checkMethod(node, _method))
+    private Type dealWithMethodCall(JmmNode node, String methodName) {
+        String calledMethodName = getMethodName(node);
+        if (checkMethod(node, methodName))
             return null;
 
-        SymbolTableMethod method = analysis.getSymbolTable().getMethod(methodName);
+        SymbolTableMethod calledMethod = analysis.getSymbolTable().getMethod(calledMethodName);
 
-        List<Symbol> args  = method.getParameters();
-        Type returnType = analysis.getSymbolTable().getMethod(node.get("id")).getReturnType();
+        List<Symbol> args  = calledMethod.getParameters();
+        Type returnType = analysis.getSymbolTable().getMethod(calledMethodName).getReturnType();
         if (node.getChildren().size() - 1 != args.size()) {
-            analysis.addReport(node, "Method " + methodName + " called with "
+            analysis.addReport(node, "Method " + calledMethodName + " called with "
                     + (node.getChildren().size()) + " arguments, expected " + args.size());
         }
         for (int i = 0; i < args.size() && i < node.getChildren().size() - 1; i++) {
             Type actualType = visit(node.getChildren().get(i + 1), methodName);
             if (!args.get(i).getType().equals(actualType)) {
-                analysis.addReport(node, "Method " + methodName
+                analysis.addReport(node, "Method " + calledMethodName
                         + " called with argument of type " + actualType.getName()
                         + ", expected " + args.get(i).getType().getName());
                 return returnType;
@@ -161,38 +160,50 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         return returnType;
     }
 
-    private boolean checkMethod(JmmNode node, String _method)  {
-        String methodName = node.get("id");
-
+    private boolean checkMethod(JmmNode node, String method)  {
+        // class extends another class
         if (!analysis.getSymbolTable().getSuper().equals("java.lang.Object")) {
             return true;
         }
 
-        Type methodType = analysis.getSymbolTable().getVariableType(methodName, _method);
-        if (methodType != null) {
-            List<String> imports = analysis.getSymbolTable().getImports();
-            if (!imports.contains(methodType.getName())) {
-                analysis.addReport(node, "Method " + methodName + " not found");
-                return true;
-            }
-            return true;
-        }
-        List<JmmNode> chains = node.getChildren().get(0).getChildren();
-        if (chains.size() > 0) {
-            String chain = methodName;
-            for (int i = 0; i < chains.size() - 1; i++) {
-                if (!chains.get(i).hasAttribute("id")) {
-                    analysis.addReport(node, "Method chain " + methodName + "malformed");
+        // method is from imported class
+        JmmNode firstChild = node.getChildren().get(0);
+        if (firstChild.getKind().equals("ChainMethods")) {
+            if (firstChild.getChildren().get(0).getKind().equals("Variable")) {
+                String className = firstChild.getChildren().get(0).get("id");
+                Type type = analysis.getSymbolTable().getVariableType(className, method);
+                if (type != null) {
+                    if (analysis.getSymbolTable().getImports().contains(type.getName()))
+                        return true;
+                }
+                if (analysis.getSymbolTable().getImports().contains(className)) {
                     return true;
                 }
-                chain += "." + chains.get(i).get("id");
             }
-            if (!analysis.getSymbolTable().getImports().contains(chain)) {
-                analysis.addReport(node, "Method " + chain + " not found");
-            }
+        }
+
+        // method is from same class
+        String methodName = getMethodName(node);
+        if (!analysis.getSymbolTable().getMethods().contains(methodName)) {
+            analysis.addReport(node, "Method " + methodName + " not found");
             return true;
         }
         return false;
+    }
+
+    private String getMethodName(JmmNode node) {
+        JmmNode firstChild = node.getChildren().get(0);
+        if (firstChild.getKind().equals("Literal")) {
+            if (node.get("value").equals("this")) return "this";
+            else analysis.addReport(node, "Method " + node.get("id") + " called with invalid receiver");
+        }
+        else if (firstChild.getKind().equals("Variable")) {
+            return firstChild.get("id");
+        }
+        else if (firstChild.getKind().equals("ChainMethods")) {
+            return firstChild.get("id");
+        }
+        return null;
     }
 
     private Type dealWithMemberAccessLength(JmmNode node, String method) {

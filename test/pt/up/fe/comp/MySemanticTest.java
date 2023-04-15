@@ -211,7 +211,7 @@ public class MySemanticTest {
 
     @Test
     public void testImportedMethods() {
-        String code = "import java.io; class Foo { public int foo() { java.io.print(1); return 0; } }";
+        String code = "import java.io; class Foo { public int foo() { io.print(1); return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 0;
@@ -219,7 +219,7 @@ public class MySemanticTest {
 
     @Test
     public void testNotImportedMethods() {
-        String code = "import java.hello; class Foo { public int foo() { java.io.print(1); return 0; } }";
+        String code = "import java.hello; class Foo { public int foo() { io.print(1); return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
