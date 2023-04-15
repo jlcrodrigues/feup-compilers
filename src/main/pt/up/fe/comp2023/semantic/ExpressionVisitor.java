@@ -149,7 +149,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             analysis.addReport(node, "Method " + methodName + " called with "
                     + (node.getChildren().size()) + " arguments, expected " + args.size());
         }
-        for (int i = 0; i < args.size(); i++) {
+        for (int i = 0; i < args.size() && i < node.getChildren().size() - 1; i++) {
             Type actualType = visit(node.getChildren().get(i + 1), methodName);
             if (!args.get(i).getType().equals(actualType)) {
                 analysis.addReport(node, "Method " + methodName

@@ -99,6 +99,14 @@ public class MySemanticTest {
 
     @Test
     public void testArrayIndex() {
+        String code = "class Foo { public int foo() { int[] a; a[9] = 1; return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
+    public void testArrayIndexWrong() {
         String code = "class Foo { public int foo() { int[] a; a[false] = 1; return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
@@ -170,8 +178,16 @@ public class MySemanticTest {
     }
 
     @Test
+    public void testMethodCallSimple() {
+        String code = "class Foo { public int foo() { int a; foo(); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
+
+    @Test
     public void testMethodCall() {
-        String code = "class Foo { public int foo(int a) { int a; foo(a); return 0; } }";
+        String code = "class Foo { public int foo(int a, boolean b) { int a; foo(a, false); return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 0;
@@ -179,7 +195,15 @@ public class MySemanticTest {
 
     @Test
     public void testMethodCallWrong() {
-        String code = "class Foo { public int foo(int a) { bool b; foo(b); return 0; } }";
+        String code = "class Foo { public int foo(int a) { boolean b; foo(b); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void testMethodCallWrong2() {
+        String code = "class Foo { public int foo(int a, boolean b) { boolean b; foo(); return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
