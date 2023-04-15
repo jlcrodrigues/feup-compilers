@@ -63,28 +63,33 @@ public class Launcher {
 
         // Parse stage
         OllirResult ollirResult = new OllirResult("""
-                 import io;
-                 protected static final myClass extends superClass{
-                 
-                 .field private static final a.bool;
-                 .field protected b.String;
-                \t.construct myClass().V {
-                \t\tinvokespecial(this, "<init>").V;
-                \t}
-                \t
-                \t.method public check(A.array.classArray, b.Foo).bool {
-                
-                
-                \t\tall.bool :=.bool 0.bool;
-                \t\t
-                \t\tc.Foo :=.Foo $2.b.Foo;
-                \t\tinvokevirtual(c.Foo,"test",$1.A.array.classArray).V;
-
-                \t\tb.bool :=.bool !.bool true.bool;
-
-
-                \t\tret.bool all.bool;
-                \t}
+                import io;
+                import Quicksort;
+                                 
+                SymbolTable extends Quicksort {
+                                 
+                	.field public intField.i32;
+                	.field public boolField.bool;
+                                 
+                	.construct SymbolTable().V {
+                		invokespecial(this, "<init>").V;
+                	}
+                	
+                	.method public method1().i32 {
+                		intLocal1.i32 :=.i32 0.i32;
+                		boolLocal1.bool :=.bool 1.bool;
+                                 
+                		ret.i32 0.i32;
+                	}
+                                 
+                	.method public method2(intParam1.i32, boolParam1.bool).bool {
+                		ret.bool boolParam1.bool;
+                	}
+                                 
+                	.method public static main(args.array.String).V {
+                		ret.V;
+                	}
+                                 
                 }""",null);
 
 
