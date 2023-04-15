@@ -91,7 +91,7 @@ public class MySemanticTest {
     @Test
     public void testArrayAccess() {
         // Array access is done over an array
-        String code = "class Foo { public int foo() { int a; a[0] = 1; return 0; } }";
+        String code = "class Foo { int a; public int foo() {  a[0] = 1; return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
@@ -99,7 +99,7 @@ public class MySemanticTest {
 
     @Test
     public void testArrayIndex() {
-        String code = "class Foo { public int foo() { int[] a; a[9] = 1; return 0; } }";
+        String code = "class Foo {int[] a; public int foo() {  a[9] = 1; return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 0;
@@ -220,6 +220,22 @@ public class MySemanticTest {
     @Test
     public void testNotImportedMethods() {
         String code = "import java.hello; class Foo { public int foo() { io.print(1); return 0; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void thisInMain() {
+        String code = "class Foo { public static void main(String[] args) { this; } }";
+
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 1;
+    }
+
+    @Test
+    public void fieldInStatic() {
+        String code = "class Foo {  int a; public static void main(String[] args) { a = 1; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;

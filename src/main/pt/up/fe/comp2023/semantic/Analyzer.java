@@ -106,14 +106,11 @@ public class Analyzer extends AJmmVisitor<String, Void> {
     }
 
     private Void dealWithAssignment(JmmNode node, String method) {
-        Type fieldType = analysis.getSymbolTable().getFieldType(node.get("id"));
+        Type fieldType = analysis.getSymbolTable().getVariableType(node.get("id"), method);
         if (fieldType == null) {
-            fieldType = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
-            if (fieldType == null) {
-                analysis.addReport(node.getChildren().get(0),
-                        "Field " + node.get("id") + " not found");
-                return null;
-            }
+            analysis.addReport(node.getChildren().get(0),
+                    "Field " + node.get("id") + " not found");
+            return null;
         }
         Type type = expressionVisitor.visit(node.getChildren().get(0), method);
         if (type == null) return null;
@@ -142,15 +139,13 @@ public class Analyzer extends AJmmVisitor<String, Void> {
     }
 
     private Void dealWithArrayAssignment(JmmNode node, String method) {
-        Type fieldType = analysis.getSymbolTable().getFieldType(node.get("id"));
+        Type fieldType = analysis.getSymbolTable().getVariableType(node.get("id"), method);
         if (fieldType == null) {
-            fieldType = analysis.getSymbolTable().getMethod(method).getFieldType(node.get("id"));
-            if (fieldType == null) {
-                analysis.addReport(node.getChildren().get(0),
-                        "Field " + node.get("id") + " not found");
-                return null;
-            }
+            analysis.addReport(node.getChildren().get(0),
+                    "Field " + node.get("id") + " not found");
+            return null;
         }
+
         if (!fieldType.isArray()) {
             analysis.addReport(node.getChildren().get(0),
                     "Array access over non-array: " + node.get("id"));

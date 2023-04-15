@@ -108,12 +108,23 @@ public class ASymbolTable implements SymbolTable {
     }
 
     public Type getVariableType(String name, String methodName) {
-        Type type = getFieldType(name);
-        if (type == null) {
-            if (methods.containsKey(methodName))
-                return methods.get(methodName).getFieldType(name);
+        Type fieldType = getFieldType(name);
+        if (methods.containsKey(methodName)) {
+            // local variable
+            Type type = methods.get(methodName).getFieldType(name);
+            if (type != null) {
+                return type;
+            }
+
+            // static methods can only access local variables
+            if (fieldType != null) {
+                if (methods.get(methodName).isStatic()) {
+                    return null;
+                }
+            }
+
         }
-        return type;
+        return fieldType;
     }
 
     public SymbolTableMethod getMethod(String name) {
