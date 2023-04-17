@@ -12,6 +12,7 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp2023.Jasmin.AJasminBackend;
+import pt.up.fe.comp2023.semantic.AJmmAnalysis;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -61,6 +62,11 @@ public class Launcher {
         System.out.println("Symbol Table:");
         System.out.println(result.getSymbolTable());
 
+        System.out.println("Reports:" + result.getReports().size());
+        for (var report : result.getReports()) {
+            System.out.println(report);
+        }
+
         // Parse stage
         OllirResult ollirResult = new OllirResult("""
             import io;
@@ -102,7 +108,6 @@ public class Launcher {
         JasminResult jasminResult = jasmin.toJasmin(ollirResult);
 
         TestUtils.noErrors(jasminResult.getReports());
-
 
     }
 

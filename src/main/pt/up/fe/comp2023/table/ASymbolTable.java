@@ -18,7 +18,7 @@ public class ASymbolTable implements SymbolTable {
 
     public ASymbolTable() {
         className = "";
-        superName = "";
+        superName = "java.lang.Object";
         importedClasses = new ArrayList<String>();
         fields = new HashMap<String, Symbol>();
         methods = new HashMap<String, SymbolTableMethod>();
@@ -101,4 +101,35 @@ public class ASymbolTable implements SymbolTable {
         methods.put(method.getName(), method);
     }
 
+    public Type getFieldType(String name) {
+        if (fields.containsKey(name))
+            return fields.get(name).getType();
+        return null;
+    }
+
+    public Type getVariableType(String name, String methodName) {
+        Type fieldType = getFieldType(name);
+        if (methods.containsKey(methodName)) {
+            // local variable
+            Type type = methods.get(methodName).getFieldType(name);
+            if (type != null) {
+                return type;
+            }
+
+            // static methods can only access local variables
+            if (fieldType != null) {
+                if (methods.get(methodName).isStatic()) {
+                    return null;
+                }
+            }
+
+        }
+        return fieldType;
+    }
+
+    public SymbolTableMethod getMethod(String name) {
+        if (methods.containsKey(name))
+            return methods.get(name);
+        return null;
+    }
 }
