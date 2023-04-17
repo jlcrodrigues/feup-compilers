@@ -177,8 +177,6 @@ public class JasminGenerator {
 
     private void generateStaticCall(CallInstruction instruction, Method method) {
         generateGeneralCall("invokestatic",JasminUtils.getElementName(instruction.getFirstArg()),instruction,method);
-        if(instruction.getReturnType().getTypeOfElement() != ElementType.VOID)
-            builder.append("\t").append("pop").append("\n");
     }
 
     private void generateVirtualCall(CallInstruction instruction, Method method) {
