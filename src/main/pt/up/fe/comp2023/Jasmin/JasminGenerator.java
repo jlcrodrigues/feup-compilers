@@ -70,7 +70,11 @@ public class JasminGenerator {
     }
 
     private void generateMethodBody(Method method) {
-        method.getInstructions().forEach(instruction -> generateInstruction(instruction,method));
+        for (Instruction instruction : method.getInstructions()) {
+            generateInstruction(instruction,method);
+            if (instruction.getInstType() == InstructionType.CALL && ((CallInstruction) (instruction)).getReturnType().getTypeOfElement() != ElementType.VOID)
+                builder.append("\t").append("pop").append("\n");
+        }
     }
 
     private void generateInstruction(Instruction instruction,Method method) {
