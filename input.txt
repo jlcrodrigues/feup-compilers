@@ -2,23 +2,9 @@ import java.utils.io;
 import FacInterface;
 
 class Fac extends FacInterface{
-    int hello;
-
-    public int computeFac ( int num , boolean stop){
-        int num_aux ;
-        int a;
-        a = j+1;
-        arr[a] = temp;
-        if ( !(num < 1))
-            num_aux = 1;
-        else
-            num_aux = num * (this.computeFac(num-1));
-        return num_aux;
-    }
-
+    int field1;
+    boolean field2;
     public static void main ( String [] args ){
-        io.println( new Fac().computeFac(10)); /* assuming the existence?*/
-                                                // assuming the existence
     }
 }
 
