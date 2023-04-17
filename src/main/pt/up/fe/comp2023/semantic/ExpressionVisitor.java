@@ -88,6 +88,9 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
                 analysis.addReport(node, "Operator " + op + " used with conflicting types " + left.getName() + " and "
                         + right.getName());
             }
+            if (op.equals("<") || op.equals(">") || op.equals("<=") || op.equals(">=") || op.equals("==") || op.equals("!=")) {
+                return new Type("boolean", false);
+            }
             return new Type("int", false);
         }
         return left;

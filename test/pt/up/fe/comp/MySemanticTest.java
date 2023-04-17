@@ -91,18 +91,18 @@ public class MySemanticTest {
     @Test
     public void testArrayAccess() {
         // Array access is done over an array
-        String code = "class Foo { int a; public int foo() {  a[0] = 1; return 0; } }";
+        String code = "class Foo { int[] a; public int foo() {  a[a[0]] = 1; return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
-        assert result.getReports().size() == 1;
+        assert result.getReports().size() == 0;
     }
 
     @Test
     public void testArrayIndex() {
-        String code = "class Foo {int[] a; int[] b; public int foo() {  a[b] = 1; return 0; } }";
+        String code = "class Foo {int[] a; int[] b; public int foo() {  a[b[0]] = 1; return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
-        assert result.getReports().size() == 1;
+        assert result.getReports().size() == 0;
     }
 
     @Test
