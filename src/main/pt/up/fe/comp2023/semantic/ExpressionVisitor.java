@@ -40,7 +40,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     }
 
     protected Type defaultVisit(JmmNode node, String method) {
-        return visit(node.getChildren().get(0));
+        return visit(node.getChildren().get(0), method);
     }
 
     private Type dealWithUnary(JmmNode node, String method) {

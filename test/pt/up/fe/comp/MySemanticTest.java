@@ -240,4 +240,28 @@ public class MySemanticTest {
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 1;
     }
+
+    @Test
+    public void fieldInStatic2() {
+        String code = """
+                
+class myClass {
+
+	public boolean check(int[] A, int N, int T){
+		int i;
+		boolean all;
+		 all= false;
+		 i= 0;
+		while((i < N) && (A[i] < T)) {
+			i++;
+		}
+		if(i == N) all = true; 
+	
+		return all;
+	}
+}
+                """;
+        JmmSemanticsResult result = getResult(code);
+        assert result.getReports().size() == 0;
+    }
 }
