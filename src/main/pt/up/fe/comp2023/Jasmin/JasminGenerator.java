@@ -181,8 +181,6 @@ public class JasminGenerator {
 
     private void generateVirtualCall(CallInstruction instruction, Method method) {
         generateGeneralCall("invokevirtual",JasminUtils.getFieldType(instruction.getFirstArg().getType(),false,classUnit),instruction,method);
-        if(instruction.getReturnType().getTypeOfElement() != ElementType.VOID)
-            builder.append("\t").append("pop").append("\n");
     }
 
     private void generateGeneralCall(String invoke,String className, CallInstruction instruction, Method method) {
