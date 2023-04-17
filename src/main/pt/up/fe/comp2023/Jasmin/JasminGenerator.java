@@ -132,7 +132,7 @@ public class JasminGenerator {
         switch (instruction.getElementType()){
             case BOOLEAN, INT32 -> builder.append("\t").append("ireturn").append("\n");
             case STRING, CLASS, OBJECTREF, ARRAYREF -> builder.append("\t").append("areturn").append("\n");
-            case VOID -> builder.append("\tpop\n\treturn\n");
+            case VOID -> builder.append("\treturn\n");
         }
 
     }
@@ -177,10 +177,14 @@ public class JasminGenerator {
 
     private void generateStaticCall(CallInstruction instruction, Method method) {
         generateGeneralCall("invokestatic",JasminUtils.getElementName(instruction.getFirstArg()),instruction,method);
+        if(instruction.getReturnType().getTypeOfElement() != ElementType.VOID)
+            builder.append("\t").append("pop").append("\n");
     }
 
     private void generateVirtualCall(CallInstruction instruction, Method method) {
         generateGeneralCall("invokevirtual",JasminUtils.getFieldType(instruction.getFirstArg().getType(),false,classUnit),instruction,method);
+        if(instruction.getReturnType().getTypeOfElement() != ElementType.VOID)
+            builder.append("\t").append("pop").append("\n");
     }
 
     private void generateGeneralCall(String invoke,String className, CallInstruction instruction, Method method) {
