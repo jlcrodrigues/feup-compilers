@@ -132,7 +132,7 @@ public class JasminGenerator {
         switch (instruction.getElementType()){
             case BOOLEAN, INT32 -> builder.append("\t").append("ireturn").append("\n");
             case STRING, CLASS, OBJECTREF, ARRAYREF -> builder.append("\t").append("areturn").append("\n");
-            case VOID -> builder.append("\t").append("return").append("\n");
+            case VOID -> builder.append("\tpop\n\treturn\n");
         }
 
     }
