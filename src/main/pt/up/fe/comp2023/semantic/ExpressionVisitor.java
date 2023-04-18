@@ -141,7 +141,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     private Type dealWithMethodCall(JmmNode node, String methodName) {
         String calledMethodName = getMethodName(node);
         if (checkMethod(node, methodName))
-            return null;
+            return new Type("import", false);
 
         SymbolTableMethod calledMethod = analysis.getSymbolTable().getMethod(calledMethodName);
 
@@ -197,14 +197,14 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     public boolean checkTypes(Type expected, Type actual) {
         if (actual == null) return false;
         if (expected.equals(actual)) return true;
+        if (actual.getName().equals("import")) return true;
 
         // this can be used as an object
         if (actual.getName().equals("this")) {
-            if (!expected.getName().equals(analysis.getSymbolTable().getClassName())
-                    && !expected.getName().equals(analysis.getSymbolTable().getSuper())) {
-                return false;
+            if (expected.getName().equals(analysis.getSymbolTable().getClassName())
+                    || expected.getName().equals(analysis.getSymbolTable().getSuper())) {
+                return true;
             }
-            return true;
         }
 
         String superName = analysis.getSymbolTable().getSuper();
