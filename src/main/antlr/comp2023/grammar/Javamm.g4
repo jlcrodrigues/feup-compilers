@@ -66,10 +66,10 @@ elseStatement : 'else' statement #Else;
 
 expression :
     '(' expression ')' #Parentheses
+    | expression '[' expression ']' #ArrayAccess
     | expression op = ('++' | '--') #UnaryOp
     | op = ('++' | '--') expression #UnaryOp
     | '!' expression #Negate
-    | expression '[' expression ']' #ArrayAccess
     | expression op = ('*' | '/') expression #BinaryOp
     | expression op = ('+' | '-') expression #BinaryOp
     | expression op = ('<' | '<=' | '>' | '>=') expression #BinaryOp

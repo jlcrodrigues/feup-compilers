@@ -70,7 +70,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
                 Type returnType = expressionVisitor.visit(child.getChildren().get(0), node.get("id"));
                 if (returnType == null) return null;
                 Type methodType = analysis.getSymbolTable().getReturnType(node.get("id"));
-                if (!returnType.equals(methodType)) {
+                if (!expressionVisitor.checkTypes(methodType, returnType)) {
                     analysis.addReport(child.getChildren().get(0), "Return type of method " + node.get("id") + " is " + methodType + " but found " + returnType);
                 }
             }

@@ -153,11 +153,11 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         }
         for (int i = 0; i < args.size() && i < node.getChildren().size() - 1; i++) {
             Type actualType = visit(node.getChildren().get(i + 1), methodName);
-            if (!args.get(i).getType().equals(actualType)) {
-                analysis.addReport(node, "Method " + calledMethodName
-                        + " called with argument of type " + actualType.getName()
-                        + ", expected " + args.get(i).getType().getName());
-                return returnType;
+            Type expectedType = args.get(i).getType();
+            if (!checkTypes(expectedType, actualType)) {
+                analysis.addReport(node.getChildren().get(0),
+                        "Expected to find " + expectedType.getName() + " but found " +
+                                actualType.getName() + "in 'this assignment'");
             }
         }
         return returnType;
@@ -192,6 +192,21 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             return true;
         }
         return false;
+    }
+
+    public boolean checkTypes(Type expected, Type actual) {
+        if (!expected.equals(actual)) {
+            if (actual.getName().equals("this")) {
+                if (!expected.getName().equals(analysis.getSymbolTable().getClassName())
+                        && !expected.getName().equals(analysis.getSymbolTable().getSuper())) {
+                    return false;
+                }
+                else
+                    return true;
+            }
+            return false;
+        }
+        return true;
     }
 
     private String getMethodName(JmmNode node) {
