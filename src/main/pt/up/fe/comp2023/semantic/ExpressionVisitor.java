@@ -195,18 +195,32 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
     }
 
     public boolean checkTypes(Type expected, Type actual) {
-        if (!expected.equals(actual)) {
-            if (actual.getName().equals("this")) {
-                if (!expected.getName().equals(analysis.getSymbolTable().getClassName())
-                        && !expected.getName().equals(analysis.getSymbolTable().getSuper())) {
-                    return false;
-                }
-                else
-                    return true;
+        if (actual == null) return false;
+        if (expected.equals(actual)) return true;
+
+        // this can be used as an object
+        if (actual.getName().equals("this")) {
+            if (!expected.getName().equals(analysis.getSymbolTable().getClassName())
+                    && !expected.getName().equals(analysis.getSymbolTable().getSuper())) {
+                return false;
             }
-            return false;
+            return true;
         }
-        return true;
+
+        String superName = analysis.getSymbolTable().getSuper();
+        String className = analysis.getSymbolTable().getClassName();
+
+        // extended class
+        if (className.equals(actual.getName()) && superName.equals(expected.getName())) {
+            return true;
+        }
+
+        // imported class may extend actual class
+        List<String> imports = analysis.getSymbolTable().getImports();
+        if (imports.contains(actual.getName())) {
+            return true;
+        }
+        return false;
     }
 
     private String getMethodName(JmmNode node) {

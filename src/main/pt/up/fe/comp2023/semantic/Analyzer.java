@@ -71,7 +71,8 @@ public class Analyzer extends AJmmVisitor<String, Void> {
                 if (returnType == null) return null;
                 Type methodType = analysis.getSymbolTable().getReturnType(node.get("id"));
                 if (!expressionVisitor.checkTypes(methodType, returnType)) {
-                    analysis.addReport(child.getChildren().get(0), "Return type of method " + node.get("id") + " is " + methodType + " but found " + returnType);
+                    analysis.addReport(child.getChildren().get(0), "Return type of method "
+                            + node.get("id") + " is " + methodType + " but found " + returnType);
                 }
             }
             else visit(child, node.get("id"));
@@ -113,28 +114,13 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             return null;
         }
         Type type = expressionVisitor.visit(node.getChildren().get(0), method);
-        if (type == null) return null;
-        if (type.getName().equals("this")) {
-            if (!fieldType.getName().equals(analysis.getSymbolTable().getClassName())
-                    && !fieldType.getName().equals(analysis.getSymbolTable().getSuper())) {
-                analysis.addReport(node.getChildren().get(0),
-                        "Expected to find " + analysis.getSymbolTable().getClassName()
-                                + " or " + analysis.getSymbolTable().getSuper() + " but found " +
-                                fieldType.getName() + "in 'this assignment'");
-            }
-        }
-        else if (!fieldType.equals(type)) {
-            List<String> imports = analysis.getSymbolTable().getImports();
-            if (imports.contains(type.getName()) && imports.contains(fieldType.getName())) {
-                return null;
-            }
-            String superName = analysis.getSymbolTable().getSuper();
-            String className = analysis.getSymbolTable().getClassName();
-            if (superName.equals(fieldType.getName()) && className.equals(type.getName()))
-                return null;
+
+        if (!expressionVisitor.checkTypes(fieldType, type)) {
             analysis.addReport(node.getChildren().get(0),
-                    "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
+                    "Type of right side of assignment must be " + fieldType.getName()
+                            + " but found " + (type == null ? "null" : type.getName()));
         }
+
         return null;
     }
 
@@ -161,7 +147,8 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         }
 
         Type type = expressionVisitor.visit(node.getChildren().get(1), method);
-        if (!fieldType.getName().equals(type.getName())) {
+        Type tempFieldType = new Type(fieldType.getName(), false);
+        if (!expressionVisitor.checkTypes(tempFieldType, type)) {
             analysis.addReport(node.getChildren().get(0),
                     "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
         }
