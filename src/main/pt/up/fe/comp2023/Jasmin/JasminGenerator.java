@@ -70,7 +70,11 @@ public class JasminGenerator {
     }
 
     private void generateMethodBody(Method method) {
-        method.getInstructions().forEach(instruction -> generateInstruction(instruction,method));
+        for (Instruction instruction : method.getInstructions()) {
+            generateInstruction(instruction,method);
+            if (instruction.getInstType() == InstructionType.CALL && ((CallInstruction) (instruction)).getReturnType().getTypeOfElement() != ElementType.VOID)
+                builder.append("\t").append("pop").append("\n");
+        }
     }
 
     private void generateInstruction(Instruction instruction,Method method) {
@@ -132,7 +136,7 @@ public class JasminGenerator {
         switch (instruction.getElementType()){
             case BOOLEAN, INT32 -> builder.append("\t").append("ireturn").append("\n");
             case STRING, CLASS, OBJECTREF, ARRAYREF -> builder.append("\t").append("areturn").append("\n");
-            case VOID -> builder.append("\t").append("return").append("\n");
+            case VOID -> builder.append("\treturn\n");
         }
 
     }

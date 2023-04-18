@@ -11,10 +11,7 @@ public class AJasminBackend implements JasminBackend {
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
         ClassUnit classUnit = ollirResult.getOllirClass();
-        classUnit.show();
         String code = new JasminGenerator(classUnit).generate();
-        System.out.println("Jasmin Code:");
-        System.out.println(code);
         return new JasminResult(classUnit.getClassName(), code, new ArrayList<>());
     }
 }

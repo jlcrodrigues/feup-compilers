@@ -107,7 +107,11 @@ public class Launcher {
 
         JasminResult jasminResult = jasmin.toJasmin(ollirResult);
 
+        System.out.println(jasminResult.getJasminCode());
+
         TestUtils.noErrors(jasminResult.getReports());
+
+        //TestUtils.runJasmin(jasminResult.getJasminCode());
 
     }
 
