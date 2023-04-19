@@ -107,7 +107,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             analysis.addReport(node, "Array access used with a non-array " + array.getName());
             return null;
         }
-        else if (!index.getName().equals("int")) {
+        else if (!index.getName().equals("int") || index.isArray()) {
             analysis.addReport(node, "Array access used with a non-int " + index.getName());
             return null;
         }
