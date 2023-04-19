@@ -183,6 +183,12 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
                     return true;
                 }
             }
+            else if (firstChild.getChildren().get(0).getKind().equals("Literal")) {
+                if (firstChild.getChildren().get(0).get("value").equals("this")
+                        && analysis.getSymbolTable().getMethod(method).isStatic()) {
+                    analysis.addReport(node, "'this' cannot be used this in a static method");
+                }
+            }
         }
 
         // method is from same class
