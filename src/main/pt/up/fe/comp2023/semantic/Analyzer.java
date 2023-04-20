@@ -94,7 +94,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             //analysis.addReport(node.getChildren().get(0), "Condition can't be null");
             return null;
         }
-        if (!conditionType.getName().equals("boolean")) {
+        if (!(conditionType.getName().equals("boolean") || conditionType.getName().equals("import"))) {
             analysis.addReport(node.getChildren().get(0),
                     "Condition must be of type boolean but found " + conditionType.getName());
         }
@@ -137,7 +137,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
                     "Array access over non-array: " + node.get("id"));
         }
         Type indexType = expressionVisitor.visit(node.getChildren().get(0), method);
-        if (!indexType.getName().equals("int")) {
+        if (!(indexType.getName().equals("int") || indexType.getName().equals("import"))) {
             analysis.addReport(node.getChildren().get(0),
                     "Array index must be of type int but found " + indexType.getName());
         }

@@ -45,7 +45,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithUnary(JmmNode node, String method) {
        Type type = visit(node.getChildren().get(0), method);
-         if (type.getName().equals("int") && !type.isArray()) {
+         if ((type.getName().equals("int") || type.getName().equals("import")) && !type.isArray()) {
               return new Type("int", false);
          }
          else {
@@ -56,7 +56,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithNegate(JmmNode node, String method) {
         Type type = visit(node.getChildren().get(0), method);
-        if (type == null || !type.equals("boolean")) {
+        if (type == null || !(type.equals("boolean") || type.equals("import"))) {
             //analysis.addReport(node, "Negation operator ! can only be applied to bool");
             return null;
         }
@@ -78,13 +78,15 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             return null;
         }
         if (op.equals("||") || op.equals("&&")) {
-            if (!left.getName().equals("boolean") || !right.getName().equals("boolean")) {
+            if (!(left.getName().equals("boolean") || left.getName().equals("import"))
+                    || !(right.getName().equals("boolean") || right.getName().equals("import"))) {
                 analysis.addReport(node, "Operator " + op + " used with conflicting types " + left.getName() + " and "
                         + right.getName());
             }
         }
         else {
-            if (!left.getName().equals("int") || !right.getName().equals("int")) {
+            if (!(left.getName().equals("int") || left.getName().equals("import"))  ||
+                    !(right.getName().equals("int") || right.getName().equals("import"))) {
                 analysis.addReport(node, "Operator " + op + " used with conflicting types " + left.getName() + " and "
                         + right.getName());
             }
@@ -107,7 +109,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             analysis.addReport(node, "Array access used with a non-array " + array.getName());
             return null;
         }
-        else if (!index.getName().equals("int") || index.isArray()) {
+        else if (!(index.getName().equals("int") || index.getName().equals("import")) || index.isArray()) {
             analysis.addReport(node, "Array access used with a non-int " + index.getName());
             return null;
         }

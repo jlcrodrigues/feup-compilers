@@ -99,7 +99,7 @@ public class MySemanticTest {
 
     @Test
     public void testArrayIndex() {
-        String code = "class Foo {int[] a; int[] b; public int foo() {  a[b[0]] = 1; return 0; } }";
+        String code = "class Foo extends Tigaao {int[] a; int[] b; public int foo() {  a[bar()] = 1; return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 0;

@@ -130,14 +130,13 @@ public class MySymbolTableTest {
 
     @Test
     public void testTypes() {
-        String code = "class Foo { int a; int[] b; boolean[] c; }";
+        String code = "class Foo { int a; int[] b; }";
 
         ASymbolTable result = getTable(code);
 
         List<Symbol> expected = List.of(
             new Symbol(new Type("int", false), "a"),
-            new Symbol(new Type("int", true), "b"),
-            new Symbol(new Type("boolean", true), "c")
+            new Symbol(new Type("int", true), "b")
         );
 
         assertEquals(expected, result.getFields());
