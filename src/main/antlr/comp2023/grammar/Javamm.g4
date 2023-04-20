@@ -42,8 +42,8 @@ argumentObject : type id = ID;
 
 type :
     id = 'int' isArray?
-    | id ='boolean' isArray?
-    | id = 'String' isArray?
+    | id ='boolean'
+    | id = 'String'
     | id = ID
     ;
 
