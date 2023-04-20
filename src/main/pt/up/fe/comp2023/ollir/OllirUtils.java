@@ -31,6 +31,7 @@ public class OllirUtils {
             case "*" -> "*.i32 ";
             case "/" -> "/.i32 ";
             case "&&" -> "&&.bool ";
+            case "||" -> "||.bool ";
             default -> null;
         };
     }
@@ -52,4 +53,5 @@ public class OllirUtils {
 
         return "main";
     }
+
 }

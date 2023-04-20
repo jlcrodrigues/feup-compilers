@@ -13,10 +13,12 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
     public final StringBuilder ollirCode;
     public final SymbolTable symbolTable;
+    private int cont;
 
     public OllirGenerator(SymbolTable symbolTable) {
         this.ollirCode = new StringBuilder();
         this.symbolTable = symbolTable;
+        this.cont = 0;
     }
 
     @Override
@@ -27,9 +29,10 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         addVisit("InstanceMethod", this::dealWithInstanceMethod);
         addVisit("Assignment", this::dealWithAssignment);
         addVisit("BinaryOp", this::dealWithBinaryOp);
-        addVisit("Variable", this::dealWithVariable);
-        addVisit("Literal", this::dealWithLiteral);
+        addVisit("Literal", this::dealWithLeaf);
+        addVisit("Variable", this::dealWithLeaf);
     }
+
 
     private StringBuilder dealWithProgram(JmmNode node, Void arg) {
         for (var importString : symbolTable.getImports()) {
@@ -116,7 +119,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                 visit(child);
         }
 
-        var returnObject = visit(node.getJmmChild(node.getNumChildren()-1).getJmmChild(0));
+        StringBuilder returnObject = visit(node.getJmmChild(node.getNumChildren()-1).getJmmChild(0));
 
         ollirCode.append("\n\tret.").append(returnType).append(" ");
         ollirCode.append(returnObject).append(".").append(returnType);
@@ -132,6 +135,11 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         String lhs = node.get("id");
         StringBuilder rhs = visit(node.getChildren().get(0));
 
+        for (Symbol symbol : symbolTable.getFields()) {
+            if (symbol.getName().equals(node.get("id"))){
+                type = OllirUtils.getOllirType(symbol.getType());
+            }
+        }
         for (Symbol symbol : symbolTable.getLocalVariables(parentMethod)) {
             if (symbol.getName().equals(node.get("id")))
                 type = OllirUtils.getOllirType(symbol.getType());
@@ -147,8 +155,8 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
 
+
     private StringBuilder dealWithBinaryOp(JmmNode node, Void arg) {
-        String code = "";
 
         StringBuilder lhs = visit(node.getJmmChild(0));
         StringBuilder rhs = visit(node.getJmmChild(1));
@@ -156,18 +164,32 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         String op = OllirUtils.getOllirOperator(node);
         String typeOp = OllirUtils.getTypeOperator(node);
 
-        code += lhs + typeOp + op + rhs;
+        if (Objects.equals(node.getJmmParent().getKind(), "BinaryOp")){
 
-        return new StringBuilder(code);
+            String temp = createTemp();
+            ollirCode.append("\t").append(temp).append(typeOp).append(":=").append(typeOp);
+            ollirCode.append(lhs).append(typeOp).append(op).append(rhs).append(typeOp).append(";\n");
+
+            return new StringBuilder(temp);
+        }
+
+        return new StringBuilder(lhs + typeOp + op + rhs);
     }
 
-
-    private StringBuilder dealWithLiteral(JmmNode node, Void arg) {
-        return new StringBuilder(node.get("value"));
+    private StringBuilder dealWithLeaf(JmmNode node, Void arg) {
+        if (Objects.equals(node.getKind(), "Literal"))
+            return switch (node.get("value")) {
+                case "true" -> new StringBuilder("1");
+                case "false" -> new StringBuilder("0");
+                default -> new StringBuilder(node.get("value"));
+            };
+        if (Objects.equals(node.getKind(), "Variable"))
+            return new StringBuilder(node.get("id"));
+        return null;
     }
 
-    private StringBuilder dealWithVariable(JmmNode node, Void arg) {
-        return new StringBuilder(node.get("id"));
+    private String createTemp() {
+        cont++;
+        return "t" + cont;
     }
-
 }

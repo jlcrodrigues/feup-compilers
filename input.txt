@@ -1,20 +1,21 @@
 class OllirToJasminArithmetics {
 
     int a1;
+    bool e;
     public static void main(String[] args) {
 
     }
 
     public int foo() {
-        int a[];
+        int a;
         int b;
         int c;
+                //invokestatic
+                //invokevirtual
+                //binaryOp
 
-        a[0] = 1;
-        b = 2;
-
-        c = a[2] + b;
-
+        a = a1+2+3;
+        c = 2;
         return c;
     }
 }
