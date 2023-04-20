@@ -1,10 +1,20 @@
-import java.utils.io;
-import FacInterface;
+class OllirToJasminArithmetics {
 
-class Fac extends FacInterface{
-    int field1;
-    boolean field2;
-    public static void main ( String [] args ){
+    int a1;
+    public static void main(String[] args) {
+
+    }
+
+    public int foo() {
+        int a[];
+        int b;
+        int c;
+
+        a[0] = 1;
+        b = 2;
+
+        c = a[2] + b;
+
+        return c;
     }
 }
-
