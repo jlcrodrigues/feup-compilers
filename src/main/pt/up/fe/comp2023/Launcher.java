@@ -72,7 +72,7 @@ public class Launcher {
             import io;
             import feup.pt.comp.Quicksort;
             
-            SymbolTable extends Quicksort {
+            SymbolTable{
             
                 .field public intField.i32;
                 .field public boolField.bool;
@@ -93,6 +93,7 @@ public class Launcher {
                 }
             
                 .method public static main(args.array.String).V {
+                    invokestatic(io,"println",10.i32).V;
                     ret.V;
                 }
             
@@ -111,7 +112,8 @@ public class Launcher {
 
         TestUtils.noErrors(jasminResult.getReports());
 
-        //TestUtils.runJasmin(jasminResult.getJasminCode());
+        jasminResult.compile();
+        jasminResult.run();
 
     }
 
