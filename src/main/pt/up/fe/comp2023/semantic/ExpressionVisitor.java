@@ -149,7 +149,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         Type returnType = analysis.getSymbolTable().getMethod(calledMethodName).getReturnType();
         if (node.getChildren().size() - 1 != args.size()) {
             analysis.addReport(node, "Method " + calledMethodName + " called with "
-                    + (node.getChildren().size()) + " arguments, expected " + args.size());
+                    + (node.getChildren().size() - 1) + " arguments, expected " + args.size());
         }
         for (int i = 0; i < args.size() && i < node.getChildren().size() - 1; i++) {
             Type actualType = visit(node.getChildren().get(i + 1), methodName);
@@ -157,7 +157,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             if (!checkTypes(expectedType, actualType)) {
                 analysis.addReport(node.getChildren().get(0),
                         "Expected to find " + expectedType.getName() + " but found " +
-                                actualType.getName() + "in 'this assignment'");
+                                actualType.getName() + " in 'this assignment'");
             }
         }
         return returnType;
@@ -251,7 +251,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithNewArray(JmmNode node, String method) {
         Type type = visit(node.getChildren().get(0), method);
-        if (!type.getName().equals("int")) {
+        if (!type.getName().equals("int") || type.isArray()) {
             analysis.addReport(node, "Array size must be of type int");
             return null;
         }
