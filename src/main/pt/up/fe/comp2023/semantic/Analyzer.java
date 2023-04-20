@@ -132,7 +132,7 @@ public class Analyzer extends AJmmVisitor<String, Void> {
             return null;
         }
 
-        if (!fieldType.isArray()) {
+        if (!fieldType.isArray() && !fieldType.getName().equals("import")) {
             analysis.addReport(node.getChildren().get(0),
                     "Array access over non-array: " + node.get("id"));
         }

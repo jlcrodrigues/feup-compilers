@@ -5,8 +5,11 @@ class Fac extends FacInterface{
     int hello;
 
     public int computeFac ( int num , boolean stop){
+        int[] arr;
         int num_aux ;
         int a;
+        num_aux = bar();
+        a = foo()[2];
         if ( !(num < 1))
             num_aux = 1;
         else

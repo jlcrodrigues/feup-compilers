@@ -105,7 +105,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             analysis.addReport(node, "Invalid array access");
             return null;
         }
-        else if (!array.isArray()) {
+        else if (!array.isArray() && !array.getName().equals("import")) {
             analysis.addReport(node, "Array access used with a non-array " + array.getName());
             return null;
         }
