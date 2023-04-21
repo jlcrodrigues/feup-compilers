@@ -47,14 +47,14 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private StringBuilder dealWithClass(JmmNode node, Void arg) {
-
         String superClass = symbolTable.getSuper();
 
         ollirCode.append(symbolTable.getClassName());
-        if (!Objects.equals(superClass, ""))
+        if (!Objects.equals(superClass, "")
+                && !Objects.equals(superClass, "java.lang.Object"))
             ollirCode.append(" extends ").append(superClass);
 
-        ollirCode.append("{\n\n");
+        ollirCode.append("{\n");
 
         List<Symbol> fields = symbolTable.getFields();
         if (!fields.isEmpty()){
@@ -112,7 +112,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                 .map(OllirUtils::getCode)
                 .collect(Collectors.joining(", "));
 
-        ollirCode.append(".method public ").append(node.get("id"));
+        ollirCode.append("\n.method public ").append(node.get("id"));
         ollirCode.append("(").append(paramCode).append(").");
         ollirCode.append(returnType).append("{\n");
 
@@ -190,9 +190,6 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
     private StringBuilder dealWithLeaf(JmmNode node, Void arg) {
         if (Objects.equals(node.getKind(), "Literal")){
-
-            System.out.println(node.get("value"));
-            System.out.println("literal");
             return switch (node.get("value")) {
                 case "true" -> new StringBuilder("1");
                 case "false" -> new StringBuilder("0");

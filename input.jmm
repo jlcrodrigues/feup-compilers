@@ -1,14 +1,7 @@
-class OllirToJasminInvoke extends io {
+import Dummy;
 
-    int a;
-
-    public int get(){
- 		return a;
-	}
-
-    public static void main(String[] args) {
-        myClass A;
-
+class NoArgsFuncCall{
+    public int bar(Dummy c){
+        return 1;
     }
-
 }
