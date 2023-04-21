@@ -7,10 +7,13 @@ import java.util.Map;
 
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.ReportType;
+import pt.up.fe.comp2023.ollir.JmmOptimizer;
+
 import pt.up.fe.comp2023.Jasmin.AJasminBackend;
 import pt.up.fe.comp2023.semantic.AJmmAnalysis;
 import pt.up.fe.specs.util.SpecsIo;
@@ -44,7 +47,6 @@ public class Launcher {
         JmmParserResult parserResult = parser.parse(code, parser.getDefaultRule(),config);
 
         // Check if there are parsing errors
-
         long errorCount = parserResult.getReports().stream()
                 .filter(report -> report.getType() == ReportType.ERROR)
                 .peek(report -> System.out.println("Error report: " + report))
@@ -59,47 +61,23 @@ public class Launcher {
 
         JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
 
+        /*
         System.out.println("Symbol Table:");
         System.out.println(result.getSymbolTable());
+        System.out.println(result.getSymbolTable().print());
+        */
+        // ... add remaining stages
 
         System.out.println("Reports:" + result.getReports().size());
         for (var report : result.getReports()) {
             System.out.println(report);
         }
 
-        // Parse stage
-        OllirResult ollirResult = new OllirResult("""
-            import io;
-            import feup.pt.comp.Quicksort;
-            
-            SymbolTable{
-            
-                .field public intField.i32;
-                .field public boolField.bool;
-            
-                .construct SymbolTable().V {
-                    invokespecial(this, "<init>").V;
-                }
-                
-                .method public method1().i32 {
-                    intLocal1.i32 :=.i32 0.i32;
-                    boolLocal1.bool :=.bool 1.bool;
-            
-                    ret.i32 0.i32;
-                }
-            
-                .method public method2(intParam1.i32, boolParam1.bool).bool {
-                    ret.bool boolParam1.bool;
-                }
-            
-                .method public static main(args.array.String).V {
-                    invokestatic(io,"println",10.i32).V;
-                    ret.V;
-                }
-            
-            }
-            """,null);
+        JmmOptimizer optimizer = new JmmOptimizer();
 
+        OllirResult ollirResult = optimizer.toOllir(result);
+
+        System.out.println(ollirResult.getOllirCode());
 
         // Check if there are parsing errors
         TestUtils.noErrors(ollirResult.getReports());
@@ -108,7 +86,7 @@ public class Launcher {
 
         JasminResult jasminResult = jasmin.toJasmin(ollirResult);
 
-        System.out.println(jasminResult.getJasminCode());
+        //System.out.println(jasminResult.getJasminCode());
 
         TestUtils.noErrors(jasminResult.getReports());
 

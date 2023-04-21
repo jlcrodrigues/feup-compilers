@@ -1,25 +1,7 @@
-import java.utils.io;
-import FacInterface;
+import Dummy;
 
-class Fac extends FacInterface{
-    int hello;
-
-    public int computeFac ( int num , boolean stop){
-        int[] arr;
-        int num_aux ;
-        int a;
-        num_aux = bar();
-        a = foo()[2];
-        if ( !(num < 1))
-            num_aux = 1;
-        else
-            num_aux = num * (this.computeFac(num-1));
-        return num_aux;
-    }
-
-    public static void main ( String [] args ){
-        io.println( new Fac().computeFac(10)); /* assuming the existence?*/
-                                                // assuming the existence
+class NoArgsFuncCall{
+    public int bar(Dummy c){
+        return 1;
     }
 }
-
