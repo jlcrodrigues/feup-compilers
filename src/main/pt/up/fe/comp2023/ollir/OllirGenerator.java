@@ -135,11 +135,13 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         String lhs = node.get("id");
         StringBuilder rhs = visit(node.getChildren().get(0));
 
-        for (Symbol symbol : symbolTable.getFields()) {
-            if (symbol.getName().equals(node.get("id"))){
-                type = OllirUtils.getOllirType(symbol.getType());
-            }
+        Symbol fieldSymbol = OllirUtils.isField(node, symbolTable);
+        if (fieldSymbol != null){
+            type = OllirUtils.getOllirType(fieldSymbol.getType());
+            ollirCode.append(OllirUtils.putField(node.get("id"),rhs,type));
+            return null;
         }
+
         for (Symbol symbol : symbolTable.getLocalVariables(parentMethod)) {
             if (symbol.getName().equals(node.get("id")))
                 type = OllirUtils.getOllirType(symbol.getType());
@@ -164,7 +166,8 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         String op = OllirUtils.getOllirOperator(node);
         String typeOp = OllirUtils.getTypeOperator(node);
 
-        if (Objects.equals(node.getJmmParent().getKind(), "BinaryOp")){
+        if (Objects.equals(node.getJmmParent().getKind(), "BinaryOp")
+            || OllirUtils.isField(node.getJmmParent(),symbolTable) != null){
 
             String temp = createTemp();
             ollirCode.append("\t").append(temp).append(typeOp).append(":=").append(typeOp);
@@ -183,8 +186,20 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                 case "false" -> new StringBuilder("0");
                 default -> new StringBuilder(node.get("value"));
             };
-        if (Objects.equals(node.getKind(), "Variable"))
-            return new StringBuilder(node.get("id"));
+        if (Objects.equals(node.getKind(), "Variable")){
+            Symbol fieldSymbol = OllirUtils.isField(node, symbolTable);
+            if (fieldSymbol != null){
+                String temp = createTemp();
+                String type = OllirUtils.getOllirType(fieldSymbol.getType());
+                ollirCode.append("\t").append(temp).append(".").append(type);
+                ollirCode.append(" :=.").append(type).append(" ");
+                ollirCode.append(OllirUtils.getField(node,type));
+                return new StringBuilder(temp);
+            }
+            else
+                return new StringBuilder(node.get("id"));
+        }
+
         return null;
     }
 

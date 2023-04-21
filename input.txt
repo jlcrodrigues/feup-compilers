@@ -1,7 +1,6 @@
 class OllirToJasminArithmetics {
 
-    int a1;
-    bool e;
+    int d;
     public static void main(String[] args) {
 
     }
@@ -14,8 +13,9 @@ class OllirToJasminArithmetics {
                 //invokevirtual
                 //binaryOp
 
-        a = a1+2+3;
-        c = 2;
-        return c;
+        d = 2;
+        a = d+2*3;
+
+        return d;
     }
 }

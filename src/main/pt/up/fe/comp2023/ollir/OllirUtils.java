@@ -1,6 +1,7 @@
 package pt.up.fe.comp2023.ollir;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
+import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
@@ -54,4 +55,21 @@ public class OllirUtils {
         return "main";
     }
 
+    public static Symbol isField(JmmNode node, SymbolTable symbolTable){
+        for (Symbol symbol : symbolTable.getFields()) {
+            if (symbol.getName().equals(node.get("id"))){
+                return symbol;
+            }
+        }
+        return null;
+    }
+
+    public static String putField(String field, StringBuilder rhs, String type){
+        return "\tputfield(this, " + field + "." + type + ", " + rhs + "." + type +").V;\n";
+    }
+
+
+    public static String getField(JmmNode node, String type) {
+        return "getfield(this, " + node.get("id") + "." + type + ")." + type + ";\n";
+    }
 }
