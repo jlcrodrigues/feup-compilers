@@ -64,6 +64,15 @@ public class OllirUtils {
         return null;
     }
 
+    public static Symbol isParam(JmmNode node, SymbolTable symbolTable, String parentMethod) {
+        for (Symbol symbol : symbolTable.getParameters(parentMethod)) {
+            if (symbol.getName().equals(node.get("id"))){
+                return symbol;
+            }
+        }
+        return null;
+    }
+
     public static String putField(String field, StringBuilder rhs, String type){
         return "\tputfield(this, " + field + "." + type + ", " + rhs + "." + type +").V;\n";
     }
@@ -72,4 +81,5 @@ public class OllirUtils {
     public static String getField(JmmNode node, String type) {
         return "getfield(this, " + node.get("id") + "." + type + ")." + type + ";\n";
     }
+
 }

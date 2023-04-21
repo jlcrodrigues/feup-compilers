@@ -30,7 +30,9 @@ mainMethodDeclaration :
     ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' ID ')' '{' (varDeclaration)* (statement)* '}' #MainMethod ;
 
 instanceMethodDeclaration :
-    ('public')? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
+    ('public')? staticMethod? returnType id = ID '(' (argumentObject (',' argumentObject)*)? ')' '{' (varDeclaration)* (statement)* 'return' returnObject ';' '}' #InstanceMethod;
+
+staticMethod: 'static';
 
 returnType : type;
 
@@ -40,8 +42,8 @@ argumentObject : type id = ID;
 
 type :
     id = 'int' isArray?
-    | id ='boolean' isArray?
-    | id = 'String' isArray?
+    | id ='boolean'
+    | id = 'String'
     | id = ID
     ;
 
@@ -64,6 +66,7 @@ elseStatement : 'else' statement #Else;
 
 expression :
     '(' expression ')' #Parentheses
+    | expression '[' expression ']' #ArrayAccess
     | expression op = ('++' | '--') #UnaryOp
     | op = ('++' | '--') expression #UnaryOp
     | '!' expression #Negate
@@ -73,11 +76,9 @@ expression :
     | expression op = ('==' | '!=') expression #BinaryOp
     | expression op = '&&' expression #BinaryOp
     | expression op = '||' expression #BinaryOp
-    | expression '[' expression ']' #ArrayAccess
     | expression '.' 'length' #MemberAccessLength
     | expression ('.' id = ID)+ #ChainMethods
-    | expression '(' (expression (',' expression)*)? ')' #MethodCall
-    //| 'new' type isArray #NewArray
+    | expression '(' ( expression ( ',' expression )* )? ')' #MethodCall
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal
@@ -86,5 +87,3 @@ expression :
     | id = ID #Variable
     | value = 'this' #Literal
     ;
-
-

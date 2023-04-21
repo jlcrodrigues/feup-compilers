@@ -1,0 +1,14 @@
+class OllirToJasminInvoke extends io {
+
+    int a;
+
+    public int get(){
+ 		return a;
+	}
+
+    public static void main(String[] args) {
+        myClass A;
+
+    }
+
+}

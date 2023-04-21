@@ -13,12 +13,12 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
     public final StringBuilder ollirCode;
     public final SymbolTable symbolTable;
-    private int cont;
+    private int count;
 
     public OllirGenerator(SymbolTable symbolTable) {
         this.ollirCode = new StringBuilder();
         this.symbolTable = symbolTable;
-        this.cont = 0;
+        this.count = 0;
     }
 
     @Override
@@ -93,7 +93,9 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         ollirCode.append("{\n");
 
         for (JmmNode child : node.getChildren()) {
-            visit(child);
+            if (!child.getKind().equals("Var")){
+                visit(child);
+            }
         }
 
         ollirCode.append("\tret.V;\n");
@@ -115,7 +117,8 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         ollirCode.append(returnType).append("{\n");
 
         for (JmmNode child : node.getChildren()) {
-            if (!child.getKind().equals("ReturnType") && !child.getKind().equals("Var") && !child.getKind().equals("ReturnObject"))
+            if (!child.getKind().equals("ReturnType") && !child.getKind().equals("Var")
+                    && !child.getKind().equals("ReturnObject") && !child.getKind().equals("ArgumentObject"))
                 visit(child);
         }
 
@@ -147,6 +150,13 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                 type = OllirUtils.getOllirType(symbol.getType());
         }
 
+        List<Symbol> params = symbolTable.getParameters(parentMethod);
+        for (Symbol symbol : params){
+            if (symbol.getName().equals(node.get("id"))){
+                type = OllirUtils.getOllirType(symbol.getType());
+            }
+        }
+
         ollirCode.append("\t");
         ollirCode.append(lhs).append(".").append(type);
         ollirCode.append(" :=.").append(type).append(" ");
@@ -155,7 +165,6 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
         return null;
     }
-
 
 
     private StringBuilder dealWithBinaryOp(JmmNode node, Void arg) {
@@ -180,14 +189,22 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private StringBuilder dealWithLeaf(JmmNode node, Void arg) {
-        if (Objects.equals(node.getKind(), "Literal"))
+        if (Objects.equals(node.getKind(), "Literal")){
+
+            System.out.println(node.get("value"));
+            System.out.println("literal");
             return switch (node.get("value")) {
                 case "true" -> new StringBuilder("1");
                 case "false" -> new StringBuilder("0");
                 default -> new StringBuilder(node.get("value"));
             };
+        }
+
+        Symbol fieldSymbol = OllirUtils.isField(node, symbolTable);
+        String parentMethod = OllirUtils.getParentMethod(node);
+        Symbol paramSymbol = OllirUtils.isParam(node, symbolTable, parentMethod);
+
         if (Objects.equals(node.getKind(), "Variable")){
-            Symbol fieldSymbol = OllirUtils.isField(node, symbolTable);
             if (fieldSymbol != null){
                 String temp = createTemp();
                 String type = OllirUtils.getOllirType(fieldSymbol.getType());
@@ -196,15 +213,18 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                 ollirCode.append(OllirUtils.getField(node,type));
                 return new StringBuilder(temp);
             }
+            else if (paramSymbol != null){
+                int index = symbolTable.getParameters(parentMethod).indexOf(paramSymbol)+1;
+                return new StringBuilder("$" + index + "." + node.get("id"));
+            }
             else
                 return new StringBuilder(node.get("id"));
         }
-
         return null;
     }
 
     private String createTemp() {
-        cont++;
-        return "t" + cont;
+        count++;
+        return "t" + count;
     }
 }

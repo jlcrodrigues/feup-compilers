@@ -5,11 +5,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp2023.ollir.JmmOptimizer;
+
+import pt.up.fe.comp2023.Jasmin.AJasminBackend;
+import pt.up.fe.comp2023.semantic.AJmmAnalysis;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
@@ -60,13 +66,33 @@ public class Launcher {
         System.out.println(result.getSymbolTable());
         System.out.println(result.getSymbolTable().print());
         */
+        // ... add remaining stages
 
-        var optimizer = new JmmOptimizer();
+        System.out.println("Reports:" + result.getReports().size());
+        for (var report : result.getReports()) {
+            System.out.println(report);
+        }
+
+        JmmOptimizer optimizer = new JmmOptimizer();
 
         OllirResult ollirResult = optimizer.toOllir(result);
 
         System.out.println(ollirResult.getOllirCode());
-        // ... add remaining stages
+
+        // Check if there are parsing errors
+        /*TestUtils.noErrors(ollirResult.getReports());
+
+        AJasminBackend jasmin = new AJasminBackend();
+
+        JasminResult jasminResult = jasmin.toJasmin(ollirResult);
+
+        //System.out.println(jasminResult.getJasminCode());
+
+        TestUtils.noErrors(jasminResult.getReports());
+
+        jasminResult.compile();
+        jasminResult.run();*/
+
     }
 
     private static Map<String, String> parseArgs(String[] args) {
