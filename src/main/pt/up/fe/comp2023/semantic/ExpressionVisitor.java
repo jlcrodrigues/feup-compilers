@@ -45,6 +45,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithUnary(JmmNode node, String method) {
        Type type = visit(node.getChildren().get(0), method);
+       if (type == null) return null;
          if ((type.getName().equals("int") || type.getName().equals("import")) && !type.isArray()) {
               return new Type("int", false);
          }
@@ -159,7 +160,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             if (!checkTypes(expectedType, actualType)) {
                 analysis.addReport(node.getChildren().get(0),
                         "Expected to find " + expectedType.getName() + " but found " +
-                                actualType.getName() + " in 'this assignment'");
+                                (actualType == null ? "null" : actualType.getName()) + " in 'this assignment'");
             }
         }
         return returnType;
@@ -255,6 +256,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithNewArray(JmmNode node, String method) {
         Type type = visit(node.getChildren().get(0), method);
+        if (type == null) return null;
         if (!type.getName().equals("int") || type.isArray()) {
             analysis.addReport(node, "Array size must be of type int");
             return null;

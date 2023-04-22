@@ -137,6 +137,10 @@ public class Analyzer extends AJmmVisitor<String, Void> {
                     "Array access over non-array: " + node.get("id"));
         }
         Type indexType = expressionVisitor.visit(node.getChildren().get(0), method);
+        if (indexType == null) {
+            analysis.addReport(node.getChildren().get(0), "Array index can't be null");
+            return null;
+        }
         if (!(indexType.getName().equals("int") || indexType.getName().equals("import"))) {
             analysis.addReport(node.getChildren().get(0),
                     "Array index must be of type int but found " + indexType.getName());
@@ -150,7 +154,8 @@ public class Analyzer extends AJmmVisitor<String, Void> {
         Type tempFieldType = new Type(fieldType.getName(), false);
         if (!expressionVisitor.checkTypes(tempFieldType, type)) {
             analysis.addReport(node.getChildren().get(0),
-                    "Type of right side of assignment must be " + fieldType.getName() + " but found " + type.getName());
+                    "Type of right side of assignment must be " + fieldType.getName()
+                            + " but found " + (type == null ? "null" : type.getName()));
         }
         return null;
     }
