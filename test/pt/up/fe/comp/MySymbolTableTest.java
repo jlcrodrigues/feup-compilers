@@ -59,7 +59,7 @@ public class MySymbolTableTest {
         ASymbolTable result = getTable(code);
 
         assert result.getImports().size() == 1;
-        assert result.getImports().get(0).equals("List");
+        assert result.getImports().get(0).equals("java.util.List");
     }
 
     @Test

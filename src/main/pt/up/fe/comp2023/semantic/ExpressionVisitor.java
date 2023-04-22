@@ -177,12 +177,14 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
             if (firstChild.getChildren().get(0).getKind().equals("Variable")) {
                 String className = firstChild.getChildren().get(0).get("id");
                 Type type = analysis.getSymbolTable().getVariableType(className, method);
-                if (type != null) {
-                    if (analysis.getSymbolTable().getImports().contains(type.getName()))
+                for (String imp : analysis.getSymbolTable().getImports()) {
+                    if (type != null) {
+                        if (imp.contains(type.getName()))
+                            return true;
+                    }
+                    if (imp.contains(className)) {
                         return true;
-                }
-                if (analysis.getSymbolTable().getImports().contains(className)) {
-                    return true;
+                    }
                 }
             }
             else if (firstChild.getChildren().get(0).getKind().equals("Literal")) {
@@ -224,9 +226,9 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
         }
 
         // imported class may extend actual class
-        List<String> imports = analysis.getSymbolTable().getImports();
-        if (imports.contains(actual.getName())) {
-            return true;
+        for (String imp : analysis.getSymbolTable().getImports()) {
+            if (imp.contains(actual.getName()))
+                return true;
         }
         return false;
     }

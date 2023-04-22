@@ -31,10 +31,11 @@ public class SymbolTableGenerator extends AJmmVisitor<Void, Void> {
     private Void dealWithProgram(JmmNode node, Void arg) {
         for (JmmNode child : node.getChildren()) {
             if (child.getKind().equals("Import")) {
-                List<JmmNode> gdChildren = child.getChildren();
-                if (gdChildren.size() > 0)
-                    symbolTable.addImport(gdChildren.get(gdChildren.size() - 1).get("id"));
-                else symbolTable.addImport(child.get("id"));
+                String path = child.get("id");
+                for (JmmNode grandChild : child.getChildren()) {
+                    path += "." + grandChild.get("id");
+                }
+                symbolTable.addImport(path);
             } else {
                 visit(child, null);
             }
