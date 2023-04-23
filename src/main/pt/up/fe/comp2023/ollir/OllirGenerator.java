@@ -180,7 +180,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
             ollirCode.append("\t").append(temp).append(".").append(type).append(" ");
             ollirCode.append(":=.").append(type).append(" ");
             ollirCode.append("new(").append(node.get("id")).append(").").append(type).append(";\n");
-            ollirCode.append(OllirUtils.invokeSpecial(node.get("id"),type));
+            ollirCode.append(OllirUtils.invokeSpecial(temp,type));
             return new StringBuilder(temp);
         }
         return new StringBuilder("new("+node.get("id")+")");
@@ -224,11 +224,11 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
             else
                 result.append("invokevirtual(").append(methodInvokeString).append(", ").append(params).append(")");
 
-            if (node.getJmmParent().getKind().equals("Assignment") && OllirUtils.isField(node.getJmmParent(),symbolTable)==null){
+            if ((node.getJmmParent().getKind().equals("Assignment") && OllirUtils.isField(node.getJmmParent(),symbolTable)==null)
+                    || (node.getJmmParent().getKind().equals("ExpressionStatement"))){
                 return result;
             }
             else{
-                System.out.println(node.getJmmChild(0).get("id"));
                 var type = OllirUtils.getOllirType(symbolTable.getReturnType(node.getJmmChild(0).get("id")));
                 String temp = createTemp();
                 ollirCode.append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
