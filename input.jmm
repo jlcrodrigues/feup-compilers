@@ -3,20 +3,17 @@ class Test {
 
     int d;
 
+    public int compFac(int num){
+        return num;
+    }
 
     public int foo() {
-        int a;
-        int b;
         Test e;
-
         e = new Test();
-        d = 4;
-        a = d;
-        b = 2;
-        b = new Test().foo();
+        d = 2;
+        io.println(e.compFac(d));
 
-
-        return a + b + d;
+        return 0;
     }
 
     public static void main(String[] args) {    }

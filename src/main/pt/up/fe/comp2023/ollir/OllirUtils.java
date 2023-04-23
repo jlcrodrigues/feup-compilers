@@ -11,6 +11,16 @@ public class OllirUtils {
         return symbol.getName()+"."+ getOllirType(symbol.getType());
     }
 
+    public static String getLiteralType(String value){
+        if (value.matches("\\d+")){
+            return "i32";
+        }
+        else if (value.equals("false") || value.equals("true")){
+            return "bool";
+        }
+        return null;
+    }
+
     public static String getOllirType(Type type) {
         String ollirType = type.isArray() ? "array." : "";
         if (type.getName().equals("boolean")) {

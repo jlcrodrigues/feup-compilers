@@ -70,6 +70,8 @@ expression :
     | expression op = ('++' | '--') #UnaryOp
     | op = ('++' | '--') expression #UnaryOp
     | '!' expression #Negate
+    | expression ('.' id = ID)+ #ChainMethods
+    | expression '(' ( expression ( ',' expression )* )? ')' #MethodCall
     | expression op = ('*' | '/') expression #BinaryOp
     | expression op = ('+' | '-') expression #BinaryOp
     | expression op = ('<' | '<=' | '>' | '>=') expression #BinaryOp
@@ -77,8 +79,6 @@ expression :
     | expression op = '&&' expression #BinaryOp
     | expression op = '||' expression #BinaryOp
     | expression '.' 'length' #MemberAccessLength
-    | expression ('.' id = ID)+ #ChainMethods
-    | expression '(' ( expression ( ',' expression )* )? ')' #MethodCall
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal

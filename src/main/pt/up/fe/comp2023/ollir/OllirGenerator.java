@@ -218,14 +218,61 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
             if (params.length() > 0 && params.charAt(params.length() - 1) == ',') {
                 params.deleteCharAt(params.length() - 1);
             }
+
             if (params.isEmpty())
                 result.append("invokevirtual(").append(methodInvokeString).append(")");
             else
                 result.append("invokevirtual(").append(methodInvokeString).append(", ").append(params).append(")");
+
+            if (node.getJmmParent().getKind().equals("Assignment") && OllirUtils.isField(node.getJmmParent(),symbolTable)==null){
+                return result;
+            }
+            else{
+                System.out.println(node.getJmmChild(0).get("id"));
+                var type = OllirUtils.getOllirType(symbolTable.getReturnType(node.getJmmChild(0).get("id")));
+                String temp = createTemp();
+                ollirCode.append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
+                return new StringBuilder(temp);
+            }
+        }
+        else{
+            var values = node.getChildren();
+            values.remove(0);
+            StringBuilder params = new StringBuilder();
+
+            for (var child : values){
+                String type = "";
+                if (child.getKind().equals("Variable")){
+                    String parentMethod = OllirUtils.getParentMethod(node);
+
+                    Symbol fieldSymbol = OllirUtils.isField(child, symbolTable);
+                    if (fieldSymbol != null){
+                        type = OllirUtils.getOllirType(fieldSymbol.getType());
+                    }
+                    Symbol paramSymbol = OllirUtils.isParam(child, symbolTable, parentMethod);
+                    if (paramSymbol != null){
+                        type = OllirUtils.getOllirType(paramSymbol.getType());
+                    }
+                    for (Symbol symbol : symbolTable.getLocalVariables(parentMethod)) {
+                        if (symbol.getName().equals(child.get("id")))
+                            type = OllirUtils.getOllirType(symbol.getType());
+                    }
+                    params.append(visit(child)).append(".").append(type).append(",");
+                }
+                else if (child.getKind().equals("Literal")){
+                    type = OllirUtils.getLiteralType(child.get("value"));
+                    params.append(visit(child)).append(".").append(type).append(",");
+                }
+                else{
+                    type = OllirUtils.getOllirType(symbolTable.getReturnType(child.getJmmChild(0).get("id")));
+                    params.append(visit(child)).append(".").append(type).append(",");
+                }
+            }
+            params.deleteCharAt(params.length()-1);
+            result.append("\tinvokestatic(").append(methodInvokeString).append(", ").append(params).append(")");
             return result;
         }
 
-        return null;
     }
 
     private StringBuilder dealWithChainMethods(JmmNode node, Void arg) {
@@ -245,8 +292,12 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         if (node.getJmmChild(0).getKind().equals("NewObject"))
             type = node.getJmmChild(0).get("id");
 
-        String methodInvokeString = variable.toString() + "." + type + ", "
-                + "\"" + node.get("id") + "\"";
+        String methodInvokeString;
+        if (Objects.equals(type, "")) {
+            methodInvokeString = variable.toString() + ", " + "\"" + node.get("id") + "\"";
+        } else
+            methodInvokeString = variable.toString() + "." + type + ", " + "\"" + node.get("id") + "\"";
+
         return new StringBuilder(methodInvokeString);
     }
 
