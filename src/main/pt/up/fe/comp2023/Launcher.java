@@ -82,7 +82,7 @@ public class Launcher {
         // Check if there are parsing errors
         TestUtils.noErrors(ollirResult.getReports());
 
-        /*AJasminBackend jasmin = new AJasminBackend();
+        AJasminBackend jasmin = new AJasminBackend();
 
         JasminResult jasminResult = jasmin.toJasmin(ollirResult);
 
@@ -91,7 +91,7 @@ public class Launcher {
         TestUtils.noErrors(jasminResult.getReports());
 
         jasminResult.compile();
-        jasminResult.run();*/
+        jasminResult.run();
 
     }
 
