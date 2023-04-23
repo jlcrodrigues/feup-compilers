@@ -1,19 +1,24 @@
-class CompileArithmetic {
+import io;
+class Test {
 
     int d;
 
-    public static void main(String[] args) {
-
-    }
 
     public int foo() {
         int a;
         int b;
+        Test e;
 
+        e = new Test();
         d = 4;
-        a = 1;
+        a = d;
         b = 2;
+        b = new Test().foo();
+
 
         return a + b + d;
     }
+
+    public static void main(String[] args) {    }
+
 }
