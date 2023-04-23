@@ -73,6 +73,10 @@ public class OllirUtils {
         return null;
     }
 
+    public static String invokeSpecial(String variable, String type){
+        return "\tinvokespecial("+ variable + "." + type + ",\"<init>\").V;\n";
+    }
+
     public static String putField(String field, StringBuilder rhs, String type){
         return "\tputfield(this, " + field + "." + type + ", " + rhs + "." + type +").V;\n";
     }

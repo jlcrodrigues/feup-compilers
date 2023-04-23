@@ -1,19 +1,13 @@
-class CompileArithmetic {
+import io;
+class Test{
 
-    int d;
-
-    public static void main(String[] args) {
-
+    public int compFac(int num){
+        return num;
     }
 
-    public int foo() {
+    public static void main(String[] args){
         int a;
-        int b;
-
-        d = 4;
-        a = 1;
-        b = 2;
-
-        return a + b + d;
+        a = new Test().compFac(10);
+        //io.println(new Test().compFac(10));
     }
 }
