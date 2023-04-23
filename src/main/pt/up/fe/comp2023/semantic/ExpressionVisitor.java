@@ -216,6 +216,11 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
                     || expected.getName().equals(analysis.getSymbolTable().getSuper())) {
                 return true;
             }
+            // imported class may extend actual class
+            for (String imp : analysis.getSymbolTable().getImports()) {
+                if (imp.contains(expected.getName()))
+                    return true;
+            }
         }
 
         String superName = analysis.getSymbolTable().getSuper();

@@ -147,7 +147,7 @@ public class MySemanticTest {
 
     @Test
     public void testThisNotStatic() {
-        String code = "class Foo { public int foo(Foo f) { foo(this); return 0; } }";
+        String code = "import A; class Foo { public int foo(A f) { foo(this); return 0; } }";
 
         JmmSemanticsResult result = getResult(code);
         assert result.getReports().size() == 0;
