@@ -34,6 +34,7 @@ public class Analysis {
 
     public void addReport(JmmNode node, String message) {
         reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC,
+                //TODO get line and col
                 Integer.parseInt(node.get("lineStart")), Integer.parseInt(node.get("colStart")),
                 message));
     }
