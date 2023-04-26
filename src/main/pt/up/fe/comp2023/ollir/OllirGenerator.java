@@ -186,7 +186,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private StringBuilder dealWithExpressionStatement(JmmNode node, Void arg){
-        ollirCode.append("\t").append(visit(node.getJmmChild(0)));
+        ollirCode.append("\n\t").append(visit(node.getJmmChild(0)));
         return null;
     }
 
@@ -222,7 +222,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
             if (node.getJmmParent().getKind().equals("ExpressionStatement"))
                 return result.append(".").append(type).append(";");
-           else{
+            else{
                 String temp = createTemp();
                 ollirCode.append("\t").append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
                 return new StringBuilder(temp);
@@ -231,9 +231,10 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         else{
             var values = node.getChildren();
             values.remove(0);
+            String type = "";
             StringBuilder params = new StringBuilder();
             for (var child : values){
-                String type = "";
+
                 if (child.getKind().equals("Variable")){
                     String parentMethod = OllirUtils.getParentMethod(node);
 
@@ -260,11 +261,18 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
             }
             if (!params.isEmpty()){
                 params.deleteCharAt(params.length()-1);
-                result.append("invokestatic(").append(methodInvokeString).append(", ").append(params).append(").V;");
+                result.append("invokestatic(").append(methodInvokeString).append(", ").append(params).append(")");
             }
             else
-                result.append("invokestatic(").append(methodInvokeString).append(").V;");
-            return result;
+                result.append("invokestatic(").append(methodInvokeString).append(")");
+
+            if (node.getJmmParent().getKind().equals("ExpressionStatement"))
+                return result.append(".V;\n");
+            else{
+                String temp = createTemp();
+                ollirCode.append("\t").append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
+                return new StringBuilder(temp);
+            }
         }
 
     }
@@ -273,6 +281,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         String parentMethod = OllirUtils.getParentMethod(node);
         String type = "";
         JmmNode src = node.getJmmChild(0);
+
         if (src.getKind().equals("Variable")){
             Symbol fieldSymbol = OllirUtils.isField(src, symbolTable);
             if (fieldSymbol != null){
@@ -286,6 +295,8 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
             if (localSymbol != null){
                 type = OllirUtils.getOllirType(localSymbol.getType());
             }
+            if (symbolTable.getImports().contains(type))
+                type = "";
         }
         else if (src.getKind().equals("NewObject"))
             type = src.get("id");
@@ -342,7 +353,12 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
             }
             else if (paramSymbol != null){
                 int index = symbolTable.getParameters(parentMethod).indexOf(paramSymbol)+1;
-                return new StringBuilder("$" + index + "." + node.get("id"));
+                String type = OllirUtils.getOllirType(paramSymbol.getType());
+                String temp = createTemp();
+                ollirCode.append("\t").append(temp).append(".").append(type);
+                ollirCode.append(" :=.").append(type).append(" ");
+                ollirCode.append("$").append(index).append(".").append(node.get("id")).append(".").append(type).append(";\n");
+                return new StringBuilder(temp);
             }
             else if (fieldSymbol != null){
                 String type = OllirUtils.getOllirType(fieldSymbol.getType());
