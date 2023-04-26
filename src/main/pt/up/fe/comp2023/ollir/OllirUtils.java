@@ -67,7 +67,7 @@ public class OllirUtils {
 
     public static Symbol isField(JmmNode node, SymbolTable symbolTable){
         for (Symbol symbol : symbolTable.getFields()) {
-            if (symbol.getName().equals(node.get("id"))){
+            if (node.getKind().equals("Variable") && symbol.getName().equals(node.get("id"))){
                 return symbol;
             }
         }
@@ -76,7 +76,16 @@ public class OllirUtils {
 
     public static Symbol isParam(JmmNode node, SymbolTable symbolTable, String parentMethod) {
         for (Symbol symbol : symbolTable.getParameters(parentMethod)) {
-            if (symbol.getName().equals(node.get("id"))){
+            if (node.getKind().equals("Variable") && symbol.getName().equals(node.get("id"))){
+                return symbol;
+            }
+        }
+        return null;
+    }
+
+    public static Symbol isLocal(JmmNode node, SymbolTable symbolTable, String parentMethod) {
+        for (Symbol symbol : symbolTable.getLocalVariables(parentMethod)){
+            if (node.getKind().equals("Variable") && symbol.getName().equals(node.get("id"))) {
                 return symbol;
             }
         }
