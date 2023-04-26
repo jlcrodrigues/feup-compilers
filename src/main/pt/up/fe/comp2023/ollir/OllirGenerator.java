@@ -168,15 +168,12 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         ollirCode.append(rhs).append(".").append(type);
         ollirCode.append(";\n");
 
-        if (node.getJmmChild(0).getKind().equals("NewObject")){
-            ollirCode.append(OllirUtils.invokeSpecial(node.get("id"),type));
-        }
         return null;
     }
 
     private StringBuilder dealWithNewObject(JmmNode node, Void arg) {
         Symbol fieldSymbol = OllirUtils.isField(node.getJmmParent(), symbolTable);
-        if (fieldSymbol != null || node.getJmmParent().getKind().equals("ChainMethods")){
+        if (fieldSymbol != null || node.getJmmParent().getKind().equals("ChainMethods") || node.getJmmParent().getKind().equals("Assignment")){
             var type = node.get("id");
             String temp = createTemp();
             ollirCode.append("\t").append(temp).append(".").append(type).append(" ");
@@ -225,11 +222,9 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
             if (node.getJmmParent().getKind().equals("ExpressionStatement"))
                 return result.append(".").append(type).append(";");
-            else if (node.getJmmParent().getKind().equals("Assignment") && OllirUtils.isField(node.getJmmParent(),symbolTable)==null)
-                return result;
-            else{
+           else{
                 String temp = createTemp();
-                ollirCode.append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
+                ollirCode.append("\t").append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
                 return new StringBuilder(temp);
             }
         }
@@ -368,7 +363,6 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private String createTemp() {
-        count++;
-        return "t" + count;
+        return "t" + count++;
     }
 }
