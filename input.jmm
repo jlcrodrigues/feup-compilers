@@ -12,7 +12,7 @@ class Test {
         int e;
         d = 2;
         e = a;
-        c = b.m(new Test().get());
+        c = new Test().get();
 
         return c;
     }
@@ -20,8 +20,9 @@ class Test {
 	public static void main(String[] args) {
 		ioPlus I;
         Test e;
-        e.add(2,I);
-        I.printHelloWorld();
+        int a;
+        a = e.add(new Test().get(),I);
+
 
 
 	}

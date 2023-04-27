@@ -5,6 +5,8 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.List;
+
 public class OllirUtils {
 
     public static String getCode(Symbol symbol){
@@ -50,7 +52,7 @@ public class OllirUtils {
     public static String getTypeOperator(JmmNode node){
         return switch (node.get("op")) {
             case "+", "-", "*", "/" -> ".i32 ";
-            case "&&" -> ".bool ";
+            case "&&", "||" -> ".bool ";
             default -> null;
         };
     }
@@ -65,9 +67,28 @@ public class OllirUtils {
         return "main";
     }
 
+    public static String getParentType(JmmNode node, SymbolTable symbolTable){
+        var childNode = node;
+        node = node.getJmmParent();
+        while (!node.getKind().equals("MethodCall") && !node.getKind().equals("Assignment"))
+            node = node.getJmmParent();
+
+        if (node.getKind().equals("Assignment"))
+            return getOllirType(getSymbol(node,symbolTable).getType());
+
+        return getParameterType(node, childNode, symbolTable);
+    }
+
+    public static String getParameterType(JmmNode parentNode, JmmNode childNode, SymbolTable symbolTable){
+        var params = symbolTable.getParameters(parentNode.getJmmChild(0).get("id"));
+        var index = parentNode.getChildren().indexOf(childNode);
+
+        return getOllirType(params.get(index-1).getType());
+    }
+
     public static Symbol isField(JmmNode node, SymbolTable symbolTable){
         for (Symbol symbol : symbolTable.getFields()) {
-            if (node.getKind().equals("Variable") && symbol.getName().equals(node.get("id"))){
+            if (symbol.getName().equals(node.get("id"))){
                 return symbol;
             }
         }
@@ -76,7 +97,7 @@ public class OllirUtils {
 
     public static Symbol isParam(JmmNode node, SymbolTable symbolTable, String parentMethod) {
         for (Symbol symbol : symbolTable.getParameters(parentMethod)) {
-            if (node.getKind().equals("Variable") && symbol.getName().equals(node.get("id"))){
+            if (symbol.getName().equals(node.get("id"))){
                 return symbol;
             }
         }
@@ -85,10 +106,17 @@ public class OllirUtils {
 
     public static Symbol isLocal(JmmNode node, SymbolTable symbolTable, String parentMethod) {
         for (Symbol symbol : symbolTable.getLocalVariables(parentMethod)){
-            if (node.getKind().equals("Variable") && symbol.getName().equals(node.get("id"))) {
+            if (symbol.getName().equals(node.get("id"))) {
                 return symbol;
             }
         }
+        return null;
+    }
+
+    public static Symbol isImport(JmmNode node, SymbolTable symbolTable){
+        for (String imp : symbolTable.getImports())
+            if (node.get("id").equals(imp))
+                return new Symbol(new Type("", false),imp);
         return null;
     }
 
@@ -104,6 +132,22 @@ public class OllirUtils {
 
     public static String getField(JmmNode node, String type) {
         return "getfield(this, " + node.get("id") + "." + type + ")." + type + ";\n";
+    }
+
+    public static Symbol getSymbol(JmmNode node, SymbolTable symbolTable) {
+        if (node.getKind().equals("Literal") && node.get("value").equals("this"))
+            return new Symbol(new Type("this",false),"this");
+        String parentMethod = getParentMethod(node);
+        Symbol localSymbol = isLocal(node, symbolTable, parentMethod);
+        if (localSymbol != null) {
+            return localSymbol;
+        }
+        Symbol paramSymbol = isParam(node, symbolTable, parentMethod);
+        if (paramSymbol != null) {
+            return paramSymbol;
+        }
+
+        return isField(node, symbolTable);
     }
 
 }
