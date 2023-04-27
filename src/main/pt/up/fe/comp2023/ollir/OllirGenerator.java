@@ -171,7 +171,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private StringBuilder dealWithExpressionStatement(JmmNode node, Void arg){
-        ollirCode.append("\n\t").append(visit(node.getJmmChild(0))).append(".V;");
+        ollirCode.append("\n\t").append(visit(node.getJmmChild(0)));
         return null;
     }
 
@@ -180,138 +180,65 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         StringBuilder methodInvokeString = visit(node.getJmmChild(0));
         StringBuilder result = new StringBuilder();
         Symbol symbol = OllirUtils.getSymbol(node.getJmmChild(0).getJmmChild(0),symbolTable);
+        String methodType = "";
         String type = "";
         StringBuilder params = new StringBuilder();
 
         if (symbol != null || node.getJmmChild(0).getJmmChild(0).getKind().equals("NewObject")){
 
             if (symbolTable.getMethods().contains(node.getJmmChild(0).get("id"))){
-                type = OllirUtils.getOllirType(symbolTable.getReturnType(node.getJmmChild(0).get("id")));
+                methodType = OllirUtils.getOllirType(symbolTable.getReturnType(node.getJmmChild(0).get("id")));
                 params = joinParamsWithTypes(node,symbolTable);
             }
-
             if (params.isEmpty())
                 result.append("invokevirtual(").append(methodInvokeString).append(")");
             else
                 result.append("invokevirtual(").append(methodInvokeString).append(", ").append(params).append(")");
         }
         else{
-            /*var values = node.getChildren();
-            values.remove(0);
-            for (var child : values)
-                if (child.getKind().equals("Variable"))
-                    symbol = OllirUtils.getSymbol(child,symbolTable);*/
-
-            result.append("invokestatic(").append(methodInvokeString).append(")");
-        }
-
-        if(!node.getJmmParent().getKind().equals("ExpressionStatement") && !node.getJmmParent().getKind().equals("Assignment")){
-            if (type.equals(""))
-                type = OllirUtils.getParentType(node,symbolTable);
-            String temp = createTemp();
-            ollirCode.append("\t").append(temp).append(".").append(type).append(" :=").append(".").append(type);
-            ollirCode.append(" ").append(result).append(".").append(type).append(";\n");
-            return new StringBuilder(temp);
-        }
-
-        return result;
-    }
-  /*  private StringBuilder dealWithMethodCall(JmmNode node, Void arg){
-
-        StringBuilder methodInvokeString = visit(node.getJmmChild(0));
-        StringBuilder result = new StringBuilder();
-
-        if (!symbolTable.getImports().contains(node.getJmmChild(0).getJmmChild(0).get("id"))){
-
-            String type = "";
-
-            if (symbolTable.getMethods().contains(node.getJmmChild(0).get("id"))){
-                type = OllirUtils.getOllirType(symbolTable.getReturnType(node.getJmmChild(0).get("id")));
-
-                StringBuilder params = new StringBuilder();
-                var values = node.getChildren();
-                values.remove(0);
-                Iterator<JmmNode> iter1 = values.iterator();
-                Iterator<Symbol> iter2 = symbolTable.getParameters(node.getJmmChild(0).get("id")).iterator();
-
-                while (iter1.hasNext() && iter2.hasNext()) {
-                    params.append(visit(iter1.next()).toString());
-                    params.append(".");
-                    params.append(OllirUtils.getOllirType(iter2.next().getType()));
-                    params.append(",");
-                }
-                if (params.length() > 0 && params.charAt(params.length() - 1) == ',') {
-                    params.deleteCharAt(params.length() - 1);
-                }
-
-                if (params.isEmpty())
-                    result.append("invokevirtual(").append(methodInvokeString).append(")");
-                else
-                    result.append("invokevirtual(").append(methodInvokeString).append(", ").append(params).append(")");
-
-            }
-            else{
-                if (node.getJmmParent().getKind().equals("ExpressionStatement"))
-                    return result.append(".").append(type).append(";");
-                else{
-                    type = OllirUtils.getOllirType(OllirUtils.getSymbol(node.getJmmParent(),symbolTable).getType());
-                    String temp = createTemp();
-                    ollirCode.append("\t").append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
-                    return new StringBuilder(temp);
-                }
-            }
-
-
-        }
-        else{
             var values = node.getChildren();
             values.remove(0);
-            String type = "";
-            StringBuilder params = new StringBuilder();
-            for (var child : values){
-
-                if (child.getKind().equals("Variable")){
-                    String parentMethod = OllirUtils.getParentMethod(node);
-
-                    Symbol fieldSymbol = OllirUtils.isField(child, symbolTable);
-                    if (fieldSymbol != null){
-                        type = OllirUtils.getOllirType(fieldSymbol.getType());
-                    }
-                    Symbol paramSymbol = OllirUtils.isParam(child, symbolTable, parentMethod);
-                    if (paramSymbol != null){
-                        type = OllirUtils.getOllirType(paramSymbol.getType());
-                    }
-                    for (Symbol symbol : symbolTable.getLocalVariables(parentMethod)) {
-                        if (symbol.getName().equals(child.get("id")))
-                            type = OllirUtils.getOllirType(symbol.getType());
-                    }
+            for (var child : values) {
+                if (child.getKind().equals("Variable")) {
+                    symbol = OllirUtils.getSymbol(child, symbolTable);
+                    if (symbol != null)
+                        type = OllirUtils.getOllirType(symbol.getType());
                 }
                 else if (child.getKind().equals("Literal")){
                     type = OllirUtils.getLiteralType(child.get("value"));
                 }
-                else{
+                else if (child.getKind().equals("MethodCall"))
                     type = OllirUtils.getOllirType(symbolTable.getReturnType(child.getJmmChild(0).get("id")));
-                }
+                else
+                    type = "V";
+
                 params.append(visit(child)).append(".").append(type).append(",");
             }
-            if (!params.isEmpty()){
-                params.deleteCharAt(params.length()-1);
+            if (params.length() > 0 && params.charAt(params.length() - 1) == ',') {
+                params.deleteCharAt(params.length() - 1);
                 result.append("invokestatic(").append(methodInvokeString).append(", ").append(params).append(")");
             }
             else
                 result.append("invokestatic(").append(methodInvokeString).append(")");
-
-            if (node.getJmmParent().getKind().equals("ExpressionStatement"))
-                return result.append(".V;\n");
-            else{
-                String temp = createTemp();
-                ollirCode.append("\t").append(temp).append(".").append(type).append(" :=.").append(type).append(" ").append(result).append(".").append(type).append(";\n");
-                return new StringBuilder(temp);
-            }
         }
 
+        if(!node.getJmmParent().getKind().equals("ExpressionStatement") && !node.getJmmParent().getKind().equals("Assignment")){
+            if (methodType.equals(""))
+                methodType = OllirUtils.getParentType(node,symbolTable);
+            String temp = createTemp();
+            ollirCode.append("\t").append(temp).append(".").append(methodType).append(" :=").append(".").append(methodType);
+            ollirCode.append(" ").append(result).append(".").append(methodType).append(";\n");
+            return new StringBuilder(temp);
+        }
+        if(node.getJmmParent().getKind().equals("ExpressionStatement")){
+            if (methodType.isEmpty())
+                result.append(".V;\n");
+            else
+                result.append(".").append(methodType).append(";\n");
+        }
+
+        return result;
     }
-*/
 
     private StringBuilder dealWithChainMethods(JmmNode node, Void arg) {
         String type = "";
