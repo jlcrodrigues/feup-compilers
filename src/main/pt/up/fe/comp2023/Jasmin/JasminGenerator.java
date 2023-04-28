@@ -72,8 +72,12 @@ public class JasminGenerator {
     private void generateMethodBody(Method method) {
         for (Instruction instruction : method.getInstructions()) {
             generateInstruction(instruction,method);
-            if (instruction.getInstType() == InstructionType.CALL && ((CallInstruction) (instruction)).getReturnType().getTypeOfElement() != ElementType.VOID)
-                builder.append("\t").append("pop").append("\n");
+            if (instruction.getInstType() == InstructionType.CALL ){
+                CallInstruction call = (CallInstruction) instruction;
+                if (call.getInvocationType().equals(CallType.invokespecial) || call.getReturnType().getTypeOfElement() != ElementType.VOID) {
+                    builder.append("\t").append("pop").append("\n");
+                }
+            }
         }
     }
 
