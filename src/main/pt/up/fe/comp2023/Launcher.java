@@ -77,7 +77,7 @@ public class Launcher {
 
         OllirResult ollirResult = optimizer.toOllir(result);
 
-        //System.out.println(ollirResult.getOllirCode());
+        System.out.println(ollirResult.getOllirCode());
 
         // Check if there are parsing errors
         TestUtils.noErrors(ollirResult.getReports());
@@ -91,7 +91,7 @@ public class Launcher {
         TestUtils.noErrors(jasminResult.getReports());
 
         jasminResult.compile();
-        jasminResult.run();
+        //jasminResult.run();
 
     }
 
