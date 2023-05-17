@@ -16,8 +16,6 @@ public class MethodLivenessAnalysis {
     }
 
     public ArrayList<LivenessNode> analyze() {
-        method.buildCFG();
-
         // Fill all use and def sets
         for (Instruction instruction : method.getInstructions()) {
             fillSets(instruction);

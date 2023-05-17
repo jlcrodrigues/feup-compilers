@@ -21,7 +21,7 @@ public class JmmOptimizer implements JmmOptimization {
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
         int numRegisters = Integer.parseInt(ollirResult.getConfig().get("registerAllocation"));
-        RegisterAllocator registerAllocator = new RegisterAllocator(ollirResult);
+        RegisterAllocator registerAllocator = new RegisterAllocator(ollirResult, numRegisters);
 
         return ollirResult;
     }
