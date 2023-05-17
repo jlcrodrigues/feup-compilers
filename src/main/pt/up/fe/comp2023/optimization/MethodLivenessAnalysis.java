@@ -2,55 +2,58 @@ package pt.up.fe.comp2023.optimization;
 
 import org.specs.comp.ollir.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.ArrayList;
 
 public class MethodLivenessAnalysis {
     private Method method;
-    private final Set<String>[] def;
-    private final Set<String>[] use;
-    private final Set<String>[] liveIn;
-    private final Set<String>[] liveOut;
+    private final ArrayList<LivenessNode> interferenceGraph = new ArrayList<>();
 
-    @SuppressWarnings("unchecked")
     public MethodLivenessAnalysis(Method method) {
         this.method = method;
-        def = new Set[method.getInstructions().size()];
-        use = new Set[method.getInstructions().size()];
-        liveIn = new Set[method.getInstructions().size()];
-        liveOut = new Set[method.getInstructions().size()];
-        analyze();
+        for (Instruction instruction : method.getInstructions()) {
+            interferenceGraph.add(new LivenessNode(instruction.getId()));
+        }
     }
 
-    private void analyze() {
+    public ArrayList<LivenessNode> analyze() {
         method.buildCFG();
 
+        // Fill all use and def sets
         for (Instruction instruction : method.getInstructions()) {
-            use[instruction.getId() - 1] = new HashSet<>();
-            def[instruction.getId() - 1] = new HashSet<>();
-            liveIn[instruction.getId() - 1] = new HashSet<>();
-            liveOut[instruction.getId() - 1] = new HashSet<>();
             fillSets(instruction);
         }
 
+        // Fill liveIn and liveOut sets
         boolean changed;
         do  {
             changed = false;
             for (Instruction instruction : method.getInstructions()) {
-                if (liveIn[instruction.getId() - 1] == null) {
-                    liveIn[instruction.getId() - 1] = new HashSet<>();
-                }
-                if (liveOut[instruction.getId() - 1] == null) {
-                    liveOut[instruction.getId() - 1] = new HashSet<>();
-                }
-
                 if (updateLiveIn(instruction))
                         changed = true;
                 if (updateLiveOut(instruction))
                     changed = true;
             }
         } while (changed);
+        return interferenceGraph;
+    }
+
+    private boolean updateLiveIn(Instruction instruction) {
+        return interferenceGraph.get(instruction.getId() - 1).updateLiveIn(instruction);
+    }
+
+    /**
+     * Update liveOut set <br>
+     * liveOut(n) = U liveIn(s) for all s in successors(n)
+     */
+    private boolean updateLiveOut(Instruction instruction) {
+        boolean changed = false;
+        for (Node successor: instruction.getSuccessors()) {
+            if (successor.getNodeType() == NodeType.END)
+                continue;
+            LivenessNode successorNode = interferenceGraph.get(successor.getId() - 1);
+            changed = changed || interferenceGraph.get(instruction.getId() - 1).addOut(successorNode.getLiveIn());
+        }
+        return changed;
     }
 
     private void fillSets(Instruction instruction) {
@@ -62,7 +65,7 @@ public class MethodLivenessAnalysis {
                 Element dest = assignInstruction.getDest();
                 if (dest instanceof Operand) {
                     Operand op = (Operand) dest;
-                    def[instruction.getId() - 1].add(op.getName());
+                    interferenceGraph.get(instruction.getId() - 1).addDef(op.getName());
                 }
                 fillSets(assignInstruction.getRhs());
                 break;
@@ -110,35 +113,7 @@ public class MethodLivenessAnalysis {
             return;
         if (element instanceof Operand) {
             Operand op = (Operand) element;
-            use[id - 1].add(op.getName());
+            interferenceGraph.get(id - 1).addUse(op.getName());
         }
-    }
-
-    /**
-     * Update liveIn set <br>
-     * liveIn(n) = use(n) U (liveOut(n) - def(n))
-     */
-    private boolean updateLiveIn(Instruction instruction) {
-        boolean changed = liveIn[instruction.getId() - 1].addAll(use[instruction.getId() - 1]);
-
-        // liveOut - def
-        Set<String> temp = new HashSet<>(liveOut[instruction.getId() - 1]);
-        temp.removeAll(def[instruction.getId() - 1]);
-
-        return changed || liveIn[instruction.getId() - 1].addAll(temp);
-    }
-
-    /**
-     * Update liveOut set <br>
-     * liveOut(n) = U liveIn(s) for all s in successors(n)
-     */
-    private boolean updateLiveOut(Instruction instruction) {
-        boolean changed = false;
-        for (Node successor: instruction.getSuccessors()) {
-            if (successor.getNodeType() == NodeType.END)
-                continue;
-            changed = changed || liveOut[instruction.getId() - 1].addAll(liveIn[successor.getId() - 1]);
-        }
-        return changed;
     }
 }

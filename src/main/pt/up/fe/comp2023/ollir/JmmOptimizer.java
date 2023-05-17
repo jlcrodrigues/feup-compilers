@@ -1,10 +1,9 @@
 package pt.up.fe.comp2023.ollir;
 
-import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
-import pt.up.fe.comp2023.optimization.LivenessAnalysis;
+import pt.up.fe.comp2023.optimization.RegisterAllocator;
 
 import java.util.Collections;
 
@@ -22,7 +21,7 @@ public class JmmOptimizer implements JmmOptimization {
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
         int numRegisters = Integer.parseInt(ollirResult.getConfig().get("registerAllocation"));
-        LivenessAnalysis livenessAnalysis = new LivenessAnalysis(ollirResult);
+        RegisterAllocator registerAllocator = new RegisterAllocator(ollirResult);
 
         return ollirResult;
     }
