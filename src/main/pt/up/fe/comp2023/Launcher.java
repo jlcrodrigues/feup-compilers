@@ -84,7 +84,7 @@ public class Launcher {
             ollirResult = optimizer.optimize(ollirResult);
         }
 
-        //System.out.println(ollirResult.getOllirCode());
+        System.out.println(ollirResult.getOllirCode());
 
         // Check if there are parsing errors
         TestUtils.noErrors(ollirResult.getReports());
