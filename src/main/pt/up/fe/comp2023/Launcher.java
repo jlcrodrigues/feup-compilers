@@ -63,13 +63,6 @@ public class Launcher {
 
         JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
 
-        /*
-        System.out.println("Symbol Table:");
-        System.out.println(result.getSymbolTable());
-        System.out.println(result.getSymbolTable().print());
-        */
-        // ... add remaining stages
-
         System.out.println("Reports:" + result.getReports().size());
         for (var report : result.getReports()) {
             System.out.println(report);
