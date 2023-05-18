@@ -16,6 +16,6 @@ public class AJmmAnalysis implements JmmAnalysis {
         Analyzer analyzer = new Analyzer(symbolTable);
         analyzer.analyze(jmmParserResult.getRootNode());
 
-        return new JmmSemanticsResult(jmmParserResult, symbolTable, analyzer.getReports());
+        return new JmmSemanticsResult(jmmParserResult.getRootNode(), symbolTable, analyzer.getReports(), jmmParserResult.getConfig());
     }
 }

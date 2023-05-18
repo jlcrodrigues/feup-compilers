@@ -20,6 +20,8 @@ import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
 import pt.up.fe.specs.util.SpecsSystem;
 
+import static java.lang.Integer.parseInt;
+
 public class Launcher {
 
     public static void main(String[] args) {
@@ -61,13 +63,6 @@ public class Launcher {
 
         JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
 
-        /*
-        System.out.println("Symbol Table:");
-        System.out.println(result.getSymbolTable());
-        System.out.println(result.getSymbolTable().print());
-        */
-        // ... add remaining stages
-
         System.out.println("Reports:" + result.getReports().size());
         for (var report : result.getReports()) {
             System.out.println(report);
@@ -76,6 +71,11 @@ public class Launcher {
         JmmOptimizer optimizer = new JmmOptimizer();
 
         OllirResult ollirResult = optimizer.toOllir(result);
+
+        int registers = parseInt(config.get("registerAllocation"));
+        if (registers != -1) {
+            ollirResult = optimizer.optimize(ollirResult);
+        }
 
         //System.out.println(ollirResult.getOllirCode());
 
@@ -90,8 +90,8 @@ public class Launcher {
 
         TestUtils.noErrors(jasminResult.getReports());
 
-        jasminResult.compile();
-        jasminResult.run();
+        //jasminResult.compile();
+        //jasminResult.run();
 
     }
 
@@ -99,16 +99,26 @@ public class Launcher {
         SpecsLogs.info("Executing with args: " + Arrays.toString(args));
 
         // Check if there is at least one argument
-        if (args.length != 1) {
-            throw new RuntimeException("Expected a single argument, a path to an existing input file.");
+        if (args.length < 1) {
+            throw new RuntimeException("Missing argument required: a path to an existing input file.");
         }
 
-        // Create config
         Map<String, String> config = new HashMap<>();
         config.put("inputFile", args[0]);
         config.put("optimize", "false");
         config.put("registerAllocation", "-1");
         config.put("debug", "false");
+
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-o")) {
+                config.put("optimize", "true");
+            } else if (args[i].startsWith("-r=")) {
+                String registerAllocation = args[i].substring(3);
+                config.put("registerAllocation", registerAllocation);
+            } else if (args[i].equals("-d")) {
+                config.put("debug", "true");
+            }
+        }
 
         return config;
     }
