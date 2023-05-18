@@ -57,7 +57,7 @@ public class ExpressionVisitor extends AJmmVisitor<String, Type> {
 
     private Type dealWithNegate(JmmNode node, String method) {
         Type type = visit(node.getChildren().get(0), method);
-        if (type == null || !(type.equals("boolean") || type.equals("import"))) {
+        if (type == null || !(type.getName().equals("boolean") || type.equals("import"))) {
             //analysis.addReport(node, "Negation operator ! can only be applied to bool");
             return null;
         }

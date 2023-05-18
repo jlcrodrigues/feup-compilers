@@ -2,6 +2,8 @@ package pt.up.fe.comp2023.Jasmin;
 
 import org.specs.comp.ollir.*;
 
+import java.util.HashSet;
+
 public class JasminGenerator {
 
     private final ClassUnit classUnit;
@@ -63,13 +65,13 @@ public class JasminGenerator {
             builder.append(")");
             builder.append(methodReturnType).append("\n");
             builder.append(".limit stack 99\n");
-            builder.append(".limit locals 99\n");
             generateMethodBody(method);
             builder.append(".end method\n\n");
         });
     }
 
     private void generateMethodBody(Method method) {
+        builder.append(".limit locals " + getNumLocals(method) + "\n");
         for (Instruction instruction : method.getInstructions()) {
             generateInstruction(instruction,method);
             if (instruction.getInstType() == InstructionType.CALL ){
@@ -79,6 +81,14 @@ public class JasminGenerator {
                 }
             }
         }
+    }
+
+    private int getNumLocals(Method method) {
+        HashSet<Integer> locals = new HashSet<>();
+        for (Descriptor descriptor : method.getVarTable().values()) {
+            locals.add(descriptor.getVirtualReg());
+        }
+        return locals.size();
     }
 
     private void generateInstruction(Instruction instruction,Method method) {
