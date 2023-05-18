@@ -74,7 +74,7 @@ public class Launcher {
 
         int registers = parseInt(config.get("registerAllocation"));
         if (registers != -1) {
-            ollirResult = optimizer.optimize(ollirResult);
+            //ollirResult = optimizer.optimize(ollirResult);
         }
 
         //System.out.println(ollirResult.getOllirCode());
