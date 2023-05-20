@@ -242,6 +242,10 @@ public class JasminGenerator {
         OpInstruction condition = ((OpCondInstruction) instruction).getCondition();
         OperationType opType = condition.getOperation().getOpType();
         if (condition instanceof BinaryOpInstruction){
+            if (checkComparisonWithZero((BinaryOpInstruction) condition)){
+                generateZeroComparisonInstruction(instruction,(BinaryOpInstruction) condition,method);
+                return;
+            }
             generateLoadInstruction(((BinaryOpInstruction) condition).getLeftOperand(),method);
             generateLoadInstruction(((BinaryOpInstruction) condition).getRightOperand(),method);
             switch(opType){
@@ -261,6 +265,32 @@ public class JasminGenerator {
                 case NOT,NOTB -> builder.append("\t").append(JasminInstructions.ifeq(instruction.getLabel())).append("\n");
             }
         }
+    }
+
+    private boolean checkComparisonWithZero(BinaryOpInstruction instruction) {
+        if (instruction.getOperation().getOpType() != OperationType.LTH && instruction.getOperation().getOpType() != OperationType.GTH &&
+                instruction.getOperation().getOpType() != OperationType.LTE && instruction.getOperation().getOpType() != OperationType.GTE &&
+                instruction.getOperation().getOpType() != OperationType.EQ && instruction.getOperation().getOpType() != OperationType.NEQ)
+            return false;
+        return JasminUtils.getElementName(instruction.getLeftOperand()).equals("0") || JasminUtils.getElementName(instruction.getRightOperand()).equals("0");
+    }
+
+    private void generateZeroComparisonInstruction(CondBranchInstruction instruction, BinaryOpInstruction condition, Method method) {
+        boolean leftIsZero = JasminUtils.getElementName(condition.getLeftOperand()).equals("0");
+        if (leftIsZero)
+            generateLoadInstruction(condition.getRightOperand(),method);
+        else
+            generateLoadInstruction(condition.getLeftOperand(),method);
+        builder.append("\t");
+        switch(condition.getOperation().getOpType()){
+            case LTH -> builder.append(leftIsZero ? JasminInstructions.ifgt(instruction.getLabel()) : JasminInstructions.iflt(instruction.getLabel()));
+            case GTH -> builder.append(leftIsZero ? JasminInstructions.iflt(instruction.getLabel()) : JasminInstructions.ifgt(instruction.getLabel()));
+            case LTE -> builder.append(leftIsZero ? JasminInstructions.ifge(instruction.getLabel()) : JasminInstructions.ifle(instruction.getLabel()));
+            case GTE -> builder.append(leftIsZero ? JasminInstructions.ifle(instruction.getLabel()) : JasminInstructions.ifge(instruction.getLabel()));
+            case EQ -> builder.append(JasminInstructions.ifeq(instruction.getLabel()));
+            case NEQ -> builder.append(JasminInstructions.ifne(instruction.getLabel()));
+        }
+        builder.append("\n");
     }
 
     private void generateGotoInstruction(GotoInstruction instruction, Method method) {
