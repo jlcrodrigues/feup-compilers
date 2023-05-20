@@ -137,45 +137,90 @@ public class JasminGenerator {
     }
 
     private void generateBinaryInstruction(BinaryOpInstruction instruction, Method method) {
-        generateLoadInstruction(instruction.getLeftOperand(),method);
-        generateLoadInstruction(instruction.getRightOperand(),method);
+        if (checkComparisonWithZero(instruction)){
+            boolean leftIsZero = JasminUtils.getElementName(instruction.getLeftOperand()).equals("0");
+            if (leftIsZero)
+                generateLoadInstruction(instruction.getRightOperand(),method);
+            else
+                generateLoadInstruction(instruction.getLeftOperand(),method);
 
-        switch (instruction.getOperation().getOpType()){
-            case ADD -> builder.append("\t").append("iadd").append("\n");
-            case SUB -> builder.append("\t").append("isub").append("\n");
-            case MUL -> builder.append("\t").append("imul").append("\n");
-            case DIV -> builder.append("\t").append("idiv").append("\n");
-            case AND,ANDB -> builder.append("\t").append("iand").append("\n");
-            case OR,ORB -> builder.append("\t").append("ior").append("\n");
-            case LTH -> {
-                String mainLabel = "LTH";
-                String operation = JasminInstructions.if_icmplt(mainLabel+ "_" + comparisonLabelsCounter);
-                generateComparisonInstruction(operation,mainLabel);
+            switch (instruction.getOperation().getOpType()){
+                case LTH -> {
+                    String mainLabel = "LTH";
+                    String operation = leftIsZero ? JasminInstructions.ifgt(mainLabel+ "_" + comparisonLabelsCounter) :
+                            JasminInstructions.iflt(mainLabel+ "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation,mainLabel);
+                }
+                case GTH -> {
+                    String mainLabel = "GTH";
+                    String operation = leftIsZero ? JasminInstructions.iflt(mainLabel+ "_" + comparisonLabelsCounter) :
+                            JasminInstructions.ifgt(mainLabel+ "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation,mainLabel);
+                }
+                case LTE -> {
+                    String mainLabel = "LTE";
+                    String operation = leftIsZero ? JasminInstructions.ifge(mainLabel+ "_" + comparisonLabelsCounter) :
+                            JasminInstructions.ifle(mainLabel+ "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation,mainLabel);
+                }
+                case GTE -> {
+                    String mainLabel = "GTE";
+                    String operation = leftIsZero ? JasminInstructions.ifle(mainLabel+ "_" + comparisonLabelsCounter) :
+                            JasminInstructions.ifge(mainLabel+ "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation,mainLabel);
+                }
+                case EQ -> {
+                    String mainLabel = "EQ";
+                    String operation = JasminInstructions.ifeq(mainLabel+ "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation,mainLabel);
+                }
+                case NEQ-> {
+                    String mainLabel = "NE";
+                    String operation = JasminInstructions.ifne(mainLabel+ "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation,mainLabel);
+                }
             }
-            case GTH -> {
-                String mainLabel = "GTH";
-                String operation = JasminInstructions.if_icmpgt(mainLabel+ "_" + comparisonLabelsCounter);
-                generateComparisonInstruction(operation,mainLabel);
-            }
-            case LTE -> {
-                String mainLabel = "LTE";
-                String operation = JasminInstructions.if_icmple(mainLabel+ "_" + comparisonLabelsCounter);
-                generateComparisonInstruction(operation,mainLabel);
-            }
-            case GTE -> {
-                String mainLabel = "GTE";
-                String operation = JasminInstructions.if_icmpge(mainLabel+ "_" + comparisonLabelsCounter);
-                generateComparisonInstruction(operation,mainLabel);
-            }
-            case EQ -> {
-                String mainLabel = "EQ";
-                String operation = JasminInstructions.if_icmpeq(mainLabel+ "_" + comparisonLabelsCounter);
-                generateComparisonInstruction(operation,mainLabel);
-            }
-            case NEQ-> {
-                String mainLabel = "NE";
-                String operation = JasminInstructions.if_icmpne(mainLabel+ "_" + comparisonLabelsCounter);
-                generateComparisonInstruction(operation,mainLabel);
+        }
+        else{
+            generateLoadInstruction(instruction.getLeftOperand(),method);
+            generateLoadInstruction(instruction.getRightOperand(),method);
+            switch (instruction.getOperation().getOpType()) {
+                case ADD -> builder.append("\t").append("iadd").append("\n");
+                case SUB -> builder.append("\t").append("isub").append("\n");
+                case MUL -> builder.append("\t").append("imul").append("\n");
+                case DIV -> builder.append("\t").append("idiv").append("\n");
+                case AND, ANDB -> builder.append("\t").append("iand").append("\n");
+                case OR, ORB -> builder.append("\t").append("ior").append("\n");
+                case LTH -> {
+                    String mainLabel = "LTH";
+                    String operation = JasminInstructions.if_icmplt(mainLabel + "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation, mainLabel);
+                }
+                case GTH -> {
+                    String mainLabel = "GTH";
+                    String operation = JasminInstructions.if_icmpgt(mainLabel + "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation, mainLabel);
+                }
+                case LTE -> {
+                    String mainLabel = "LTE";
+                    String operation = JasminInstructions.if_icmple(mainLabel + "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation, mainLabel);
+                }
+                case GTE -> {
+                    String mainLabel = "GTE";
+                    String operation = JasminInstructions.if_icmpge(mainLabel + "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation, mainLabel);
+                }
+                case EQ -> {
+                    String mainLabel = "EQ";
+                    String operation = JasminInstructions.if_icmpeq(mainLabel + "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation, mainLabel);
+                }
+                case NEQ -> {
+                    String mainLabel = "NE";
+                    String operation = JasminInstructions.if_icmpne(mainLabel + "_" + comparisonLabelsCounter);
+                    generateComparisonInstruction(operation, mainLabel);
+                }
             }
         }
     }
@@ -359,6 +404,9 @@ public class JasminGenerator {
     private void generateAssignInstruction(AssignInstruction instruction,Method method) {
         Descriptor descriptor = JasminUtils.getDescriptor(instruction.getDest(),method);
         ElementType destType = instruction.getTypeOfAssign().getTypeOfElement();
+        if (checkIncrementAndGenerate(instruction,method,descriptor)){
+            return;
+        }
         if (descriptor == null) return;
         generateInstruction(instruction.getRhs(),method);
         String jasminInstruction = switch (destType) {
@@ -367,6 +415,44 @@ public class JasminGenerator {
             case VOID -> null;
         };
         builder.append("\t").append(jasminInstruction).append("\n");
+
+    }
+
+    private boolean checkIncrementAndGenerate(AssignInstruction instruction, Method method, Descriptor descriptor) {
+        Instruction rhsInstruction = instruction.getRhs();
+        if (!(rhsInstruction instanceof BinaryOpInstruction binaryOpInstruction)) return false;
+
+        if (binaryOpInstruction.getOperation().getOpType() != OperationType.ADD) return false;
+
+        Descriptor varDescriptor;
+        Element element;
+
+        Element leftOperand = binaryOpInstruction.getLeftOperand();
+        Element rightOperand = binaryOpInstruction.getRightOperand();
+        Descriptor leftDescriptor = JasminUtils.getDescriptor(leftOperand,method);
+        Descriptor rightDescriptor = JasminUtils.getDescriptor(rightOperand,method);
+
+        if (leftDescriptor == null || leftDescriptor.getVirtualReg()!=descriptor.getVirtualReg()){
+            if (rightDescriptor == null || rightDescriptor.getVirtualReg()!=descriptor.getVirtualReg()){
+                return false;
+            } else {
+                varDescriptor = rightDescriptor;
+                element = leftOperand;
+            }
+        } else {
+            varDescriptor = leftDescriptor;
+            element = rightOperand;
+        }
+
+        if (!element.isLiteral() || element.getType().getTypeOfElement() != ElementType.INT32) return false;
+
+        int incrementValue = Integer.parseInt(JasminUtils.getElementName(element));
+
+        if (incrementValue < -128 || incrementValue > 127) return false;
+
+        builder.append("\t").append(JasminInstructions.iinc(varDescriptor.getVirtualReg(),incrementValue)).append("\n");
+
+        return true;
 
     }
 
