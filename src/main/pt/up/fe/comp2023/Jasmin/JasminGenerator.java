@@ -109,6 +109,7 @@ public class JasminGenerator {
 
 
     private void generateInstruction(Instruction instruction,Method method) {
+        //builder.append("\t").append(instruction.getInstType()).append("\n");
         generateInstructionLabels(instruction,method);
         switch (instruction.getInstType()){
             case ASSIGN -> generateAssignInstruction((AssignInstruction) instruction,method);
@@ -182,10 +183,10 @@ public class JasminGenerator {
     private void generateComparisonInstruction(String operation, String mainLabel) {
         builder.append("\t").append(operation).append("\n");
         builder.append("\t").append(JasminInstructions.generateInt("0")).append("\n");
-        builder.append("\t").append(JasminInstructions.gotoInstruction(mainLabel + "_end")).append("\n");
+        builder.append("\t").append(JasminInstructions.gotoInstruction(mainLabel +"_"+ comparisonLabelsCounter + "_end")).append("\n");
         builder.append("\t").append(mainLabel).append("_").append(comparisonLabelsCounter).append(":\n");
         builder.append("\t").append(JasminInstructions.generateInt("1")).append("\n");
-        builder.append("\t").append(mainLabel).append("_end:\n");
+        builder.append("\t").append(mainLabel).append("_").append(comparisonLabelsCounter).append("_end:\n");
         comparisonLabelsCounter++;
     }
 
