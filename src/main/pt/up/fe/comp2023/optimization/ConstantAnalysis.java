@@ -33,15 +33,11 @@ public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
         addVisit("BinaryOp", this::dealWithBinaryOp);
         addVisit("Assignment", this::dealWithAssignment);
         addVisit("Negate", this::dealWithNegate);
+        addVisit("Variable", this::dealWithVariable);
     }
 
     protected Void defaultVisit(JmmNode node, Void arg) {
-        for (JmmNode child : node.getChildren()) {
-            if (child.getKind().equals("Variable")) {
-                visitVariable(node, null);
-            }
-            visit(child, arg);
-        }
+        visitAllChildren(node, null);
         return null;
     }
 
@@ -100,14 +96,17 @@ public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
         if (node.getChildren().get(0).getKind().equals("Literal")) {
             constants.put(node.get("id"), node.getChildren().get(0).get("value"));
         }
+        else if (constants.containsKey(node.get("id"))) {
+            constants.remove(node.get("id"));
+        }
+
         defaultVisit(node, null);
         return null;
     }
 
-    private Void visitVariable(JmmNode parent, Void arg) {
-        JmmNode node = parent.getChildren().get(0);
+    private Void dealWithVariable(JmmNode node, Void arg) {
         if (constants.containsKey(node.get("id"))) {
-            switchNode(node, constants.get(node.get("id")).toString());
+            switchNode(node, constants.get(node.get("id")));
         }
         return null;
     }
