@@ -90,8 +90,8 @@ public class Launcher {
 
         TestUtils.noErrors(jasminResult.getReports());
 
-        //jasminResult.compile();
-        //jasminResult.run();
+        jasminResult.compile();
+        jasminResult.run();
 
     }
 
