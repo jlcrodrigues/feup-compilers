@@ -130,11 +130,9 @@ public class ConstantAnalysis extends AJmmVisitor<Boolean, Void> {
     }
 
     private void switchNode(JmmNode old, String value) {
-        JmmNode parent = old.getJmmParent();
         JmmNode newNode = new JmmNodeImpl("Literal");
         newNode.put("value", value);
-        parent.removeJmmChild(old);
-        parent.add(newNode);
+        old.replace(newNode);
         run = true;
     }
 
