@@ -69,6 +69,8 @@ public class Launcher {
         }
 
         JmmOptimizer optimizer = new JmmOptimizer();
+        result = optimizer.optimize(result);
+        System.out.println(parserResult.getRootNode().toTree());
 
         OllirResult ollirResult = optimizer.toOllir(result);
 

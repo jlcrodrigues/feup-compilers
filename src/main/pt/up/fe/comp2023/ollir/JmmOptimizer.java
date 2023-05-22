@@ -5,6 +5,7 @@ import org.specs.comp.ollir.Method;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp2023.optimization.ConstantAnalysis;
 import pt.up.fe.comp2023.optimization.InterferenceGraph;
 import pt.up.fe.comp2023.optimization.LivenessNode;
 import pt.up.fe.comp2023.optimization.MethodLivenessAnalysis;
@@ -21,6 +22,12 @@ public class JmmOptimizer implements JmmOptimization {
         ollirGenerator.visit(semanticsResult.getRootNode());
 
         return new OllirResult(ollirGenerator.ollirCode.toString(), semanticsResult.getConfig());
+    }
+
+    @Override
+    public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
+        ConstantAnalysis constantAnalysis = new ConstantAnalysis(semanticsResult);
+        return constantAnalysis.analyze();
     }
 
     @Override
