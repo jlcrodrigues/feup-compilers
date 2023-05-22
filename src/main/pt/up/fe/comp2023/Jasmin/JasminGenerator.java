@@ -480,7 +480,8 @@ public class JasminGenerator {
         Instruction rhsInstruction = instruction.getRhs();
         if (!(rhsInstruction instanceof BinaryOpInstruction binaryOpInstruction)) return false;
 
-        if (binaryOpInstruction.getOperation().getOpType() != OperationType.ADD) return false;
+        if (binaryOpInstruction.getOperation().getOpType() != OperationType.ADD &&
+        binaryOpInstruction.getOperation().getOpType() != OperationType.SUB) return false;
 
         Descriptor varDescriptor;
         Element element;
@@ -505,6 +506,8 @@ public class JasminGenerator {
         if (!element.isLiteral() || element.getType().getTypeOfElement() != ElementType.INT32) return false;
 
         int incrementValue = Integer.parseInt(JasminUtils.getElementName(element));
+
+        if (binaryOpInstruction.getOperation().getOpType() == OperationType.SUB) incrementValue = -incrementValue;
 
         if (incrementValue < -128 || incrementValue > 127) return false;
 
