@@ -7,7 +7,7 @@ import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 
 import java.util.HashMap;
 
-public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
+public class ConstantAnalysis extends AJmmVisitor<Boolean, Void> {
     private final JmmSemanticsResult semanticsResult;
     private final HashMap<String, String> constants;
     private boolean run; // keep running while there are changes
@@ -23,7 +23,7 @@ public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
     public JmmSemanticsResult analyze() {
         while (run) {
             run = false;
-            visit(semanticsResult.getRootNode(), null);
+            visit(semanticsResult.getRootNode(), false);
         }
         return semanticsResult;
     }
@@ -36,13 +36,16 @@ public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
         addVisit("Variable", this::dealWithVariable);
     }
 
-    protected Void defaultVisit(JmmNode node, Void arg) {
-        visitAllChildren(node, null);
+    protected Void defaultVisit(JmmNode node, Boolean inLoop) {
+        visitAllChildren(node, inLoop || node.getKind().equals("While"));
         return null;
     }
 
-    private Void dealWithBinaryOp(JmmNode node, Void arg) {
-        visitAllChildren(node, null);
+    /**
+     * Performs constant folding for binary operations.
+     */
+    private Void dealWithBinaryOp(JmmNode node, Boolean inLoop) {
+        visitAllChildren(node, inLoop);
         JmmNode left = node.getChildren().get(0);
         JmmNode right = node.getChildren().get(1);
         if (!left.getKind().equals("Literal") && !right.getKind().equals("Literal")) return null;
@@ -79,8 +82,11 @@ public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
         return null;
     }
 
-    private Void dealWithNegate(JmmNode node, Void arg) {
-        visitAllChildren(node, null);
+    /**
+     * Performs constant folding for negation operations.
+     */
+    private Void dealWithNegate(JmmNode node, Boolean inLoop) {
+        visitAllChildren(node, inLoop);
         JmmNode child = node.getChildren().get(0);
         if (child.getKind().equals("Literal")) {
             if (child.get("value").equals("true")) {
@@ -92,19 +98,31 @@ public class ConstantAnalysis extends AJmmVisitor<Void, Void> {
         return null;
     }
 
-    private Void dealWithAssignment(JmmNode node, Void arg) {
+    /**
+     * Deals with variable assignments.
+     * Constant assignments are added to the constant table.
+     */
+    private Void dealWithAssignment(JmmNode node, Boolean inLoop) {
+        // if the visitor is inside a loop, not all constants can be changed
+        // thus, it is necessary to visit after the variable is removed
+        if (!inLoop)
+            defaultVisit(node, false);
         if (node.getChildren().get(0).getKind().equals("Literal")) {
             constants.put(node.get("id"), node.getChildren().get(0).get("value"));
         }
         else if (constants.containsKey(node.get("id"))) {
             constants.remove(node.get("id"));
         }
+        if (inLoop)
+            defaultVisit(node, true);
 
-        defaultVisit(node, null);
         return null;
     }
 
-    private Void dealWithVariable(JmmNode node, Void arg) {
+    /**
+     * Performs constant propagation.
+     */
+    private Void dealWithVariable(JmmNode node, Boolean inLoop) {
         if (constants.containsKey(node.get("id"))) {
             switchNode(node, constants.get(node.get("id")));
         }
