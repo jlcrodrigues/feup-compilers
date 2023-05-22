@@ -69,17 +69,7 @@ public class Launcher {
         }
 
         JmmOptimizer optimizer = new JmmOptimizer();
-
-        if (config.get("optimize").equals("true"))
-            result = optimizer.optimize(result);
-
-
         OllirResult ollirResult = optimizer.toOllir(result);
-
-        int registers = parseInt(config.get("registerAllocation"));
-        if (registers != -1) {
-            //ollirResult = optimizer.optimize(ollirResult);
-        }
 
         System.out.println(ollirResult.getOllirCode());
 

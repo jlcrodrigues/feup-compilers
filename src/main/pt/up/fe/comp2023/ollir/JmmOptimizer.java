@@ -12,20 +12,37 @@ import pt.up.fe.comp2023.optimization.MethodLivenessAnalysis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+
+import static java.lang.Integer.parseInt;
 
 public class JmmOptimizer implements JmmOptimization {
 
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
+        Map<String, String> config  = semanticsResult.getConfig();
+        if (config.containsKey("optimize") && config.get("optimize").equals("true"))
+            semanticsResult = optimize(semanticsResult);
+        System.out.println(semanticsResult.getRootNode().toTree());
+
         OllirGenerator ollirGenerator = new OllirGenerator(semanticsResult.getSymbolTable());
-
         ollirGenerator.visit(semanticsResult.getRootNode());
+        OllirResult ollirResult = new OllirResult(ollirGenerator.ollirCode.toString(), semanticsResult.getConfig());
 
-        return new OllirResult(ollirGenerator.ollirCode.toString(), semanticsResult.getConfig());
+        if (config.containsKey("registerAllocation")) {
+            int registers = parseInt(semanticsResult.getConfig().get("registerAllocation"));
+            if (registers != -1) {
+                ollirResult = optimize(ollirResult);
+            }
+        }
+        return ollirResult;
     }
 
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
+        Map<String, String> config  = semanticsResult.getConfig();
+        if (!config.containsKey("optimize") || !config.get("optimize").equals("true"))
+            return semanticsResult;
         ConstantAnalysis constantAnalysis = new ConstantAnalysis(semanticsResult);
         return constantAnalysis.analyze();
     }
