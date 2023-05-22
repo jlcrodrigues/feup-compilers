@@ -12,11 +12,17 @@ public class JasminGenerator {
     private final ClassUnit classUnit;
     private final StringBuilder builder;
 
+    private final StringBuilder instructionsBuilder;
+
+    private static int maxStack = 0;
+    private static int currentStack = 0;
+
     private int comparisonLabelsCounter = 0;
 
-    public JasminGenerator(ClassUnit classUnit) {
+    public  JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
         this.builder = new StringBuilder();
+        this.instructionsBuilder = new StringBuilder();
     }
 
     public String generate() {
@@ -69,23 +75,25 @@ public class JasminGenerator {
             });
             builder.append(")");
             builder.append(methodReturnType).append("\n");
-            builder.append(".limit stack 99\n");
             generateMethodBody(method);
             builder.append(".end method\n\n");
         });
     }
 
     private void generateMethodBody(Method method) {
-        builder.append(".limit locals ").append(getNumLocals(method)).append("\n");
+        instructionsBuilder.setLength(0);
         for (Instruction instruction : method.getInstructions()) {
             generateInstruction(instruction,method);
             if (instruction.getInstType() == InstructionType.CALL ){
                 CallInstruction call = (CallInstruction) instruction;
                 if (call.getReturnType().getTypeOfElement() != ElementType.VOID) {
-                    builder.append("\t").append("pop").append("\n");
+                    instructionsBuilder.append("\t").append(JasminInstructions.pop()).append("\n");
                 }
             }
         }
+        builder.append(".limit stack ").append(maxStack).append("\n");
+        builder.append(".limit locals ").append(getNumLocals(method)).append("\n");
+        builder.append(instructionsBuilder);
     }
 
     private int getNumLocals(Method method) {
@@ -109,7 +117,6 @@ public class JasminGenerator {
 
 
     private void generateInstruction(Instruction instruction,Method method) {
-        //builder.append("\t").append(instruction.getInstType()).append("\n");
         generateInstructionLabels(instruction,method);
         switch (instruction.getInstType()){
             case ASSIGN -> generateAssignInstruction((AssignInstruction) instruction,method);
@@ -128,7 +135,7 @@ public class JasminGenerator {
     private void generateInstructionLabels(Instruction instruction, Method method){
         List<String> labels = method.getLabels(instruction);
         for (String label : labels) {
-            builder.append("\t").append(label).append(":\n");
+            instructionsBuilder.append("\t").append(label).append(":\n");
         }
     }
 
@@ -185,12 +192,12 @@ public class JasminGenerator {
             generateLoadInstruction(instruction.getLeftOperand(),method);
             generateLoadInstruction(instruction.getRightOperand(),method);
             switch (instruction.getOperation().getOpType()) {
-                case ADD -> builder.append("\t").append("iadd").append("\n");
-                case SUB -> builder.append("\t").append("isub").append("\n");
-                case MUL -> builder.append("\t").append("imul").append("\n");
-                case DIV -> builder.append("\t").append("idiv").append("\n");
-                case AND, ANDB -> builder.append("\t").append("iand").append("\n");
-                case OR, ORB -> builder.append("\t").append("ior").append("\n");
+                case ADD -> instructionsBuilder.append("\t").append(JasminInstructions.iadd()).append("\n");
+                case SUB -> instructionsBuilder.append("\t").append(JasminInstructions.isub()).append("\n");
+                case MUL -> instructionsBuilder.append("\t").append(JasminInstructions.imul()).append("\n");
+                case DIV -> instructionsBuilder.append("\t").append(JasminInstructions.idiv()).append("\n");
+                case AND, ANDB -> instructionsBuilder.append("\t").append(JasminInstructions.iand()).append("\n");
+                case OR, ORB -> instructionsBuilder.append("\t").append(JasminInstructions.ior()).append("\n");
                 case LTH -> {
                     String mainLabel = "LTH";
                     String operation = JasminInstructions.if_icmplt(mainLabel + "_" + comparisonLabelsCounter);
@@ -226,12 +233,12 @@ public class JasminGenerator {
     }
 
     private void generateComparisonInstruction(String operation, String mainLabel) {
-        builder.append("\t").append(operation).append("\n");
-        builder.append("\t").append(JasminInstructions.generateInt("0")).append("\n");
-        builder.append("\t").append(JasminInstructions.gotoInstruction(mainLabel +"_"+ comparisonLabelsCounter + "_end")).append("\n");
-        builder.append("\t").append(mainLabel).append("_").append(comparisonLabelsCounter).append(":\n");
-        builder.append("\t").append(JasminInstructions.generateInt("1")).append("\n");
-        builder.append("\t").append(mainLabel).append("_").append(comparisonLabelsCounter).append("_end:\n");
+        instructionsBuilder.append("\t").append(operation).append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.generateInt("0")).append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.gotoInstruction(mainLabel +"_"+ comparisonLabelsCounter + "_end")).append("\n");
+        instructionsBuilder.append("\t").append(mainLabel).append("_").append(comparisonLabelsCounter).append(":\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.generateInt("1")).append("\n");
+        instructionsBuilder.append("\t").append(mainLabel).append("_").append(comparisonLabelsCounter).append("_end:\n");
         comparisonLabelsCounter++;
     }
 
@@ -239,8 +246,8 @@ public class JasminGenerator {
         if (instruction.getOperation().getOpType() != OperationType.NOT && instruction.getOperation().getOpType() != OperationType.NOTB)
             return;
         generateLoadInstruction(instruction.getOperand(),method);
-        builder.append("\t").append(JasminInstructions.generateInt("1")).append("\n");
-        builder.append("\t").append("ixor").append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.generateInt("1")).append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.ixor()).append("\n");
     }
 
     private void generateFieldInstruction(FieldInstruction instruction, Method method, boolean putfield){
@@ -251,9 +258,9 @@ public class JasminGenerator {
         String fieldName = JasminUtils.getElementName(instruction.getSecondOperand());
         String fieldType = JasminUtils.getFieldType(instruction.getSecondOperand().getType(),true,classUnit);
         if (putfield)
-            builder.append("\t").append("putfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append("\n");
+            instructionsBuilder.append("\t").append(JasminInstructions.putfield(className,fieldName,fieldType)).append("\n");
         else
-            builder.append("\t").append("getfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append("\n");
+            instructionsBuilder.append("\t").append(JasminInstructions.getfield(className,fieldName,fieldType)).append("\n");
     }
 
     private void generateReturnInstruction(ReturnInstruction instruction,Method method) {
@@ -261,9 +268,9 @@ public class JasminGenerator {
             generateLoadInstruction(instruction.getOperand(),method);
         }
         switch (instruction.getElementType()){
-            case BOOLEAN, INT32 -> builder.append("\t").append("ireturn").append("\n");
-            case STRING, CLASS, OBJECTREF, ARRAYREF -> builder.append("\t").append("areturn").append("\n");
-            case VOID -> builder.append("\treturn\n");
+            case BOOLEAN, INT32 -> instructionsBuilder.append("\t").append(JasminInstructions.ireturn()).append("\n");
+            case STRING, CLASS, OBJECTREF, ARRAYREF -> instructionsBuilder.append("\t").append(JasminInstructions.areturn()).append("\n");
+            case VOID -> instructionsBuilder.append("\treturn\n");
         }
 
     }
@@ -280,7 +287,7 @@ public class JasminGenerator {
 
     private void generateSingleOpCondInstruction(Element operand, Method method, String label) {
         generateLoadInstruction(operand,method);
-        builder.append("\t").append(JasminInstructions.ifne(label)).append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.ifne(label)).append("\n");
     }
 
     private void generateOpCondInstruction(CondBranchInstruction instruction, Method method) {
@@ -294,20 +301,20 @@ public class JasminGenerator {
             generateLoadInstruction(((BinaryOpInstruction) condition).getLeftOperand(),method);
             generateLoadInstruction(((BinaryOpInstruction) condition).getRightOperand(),method);
             switch(opType){
-                case AND,ANDB -> builder.append("\t").append(JasminInstructions.iand()).append("\n").append("\t").append(JasminInstructions.ifne(instruction.getLabel())).append("\n");
-                case OR,ORB -> builder.append("\t").append(JasminInstructions.ior()).append("\n").append("\t").append(JasminInstructions.ifne(instruction.getLabel())).append("\n");
-                case LTH -> builder.append("\t").append(JasminInstructions.if_icmplt(instruction.getLabel())).append("\n");
-                case GTH -> builder.append("\t").append(JasminInstructions.if_icmpgt(instruction.getLabel())).append("\n");
-                case LTE -> builder.append("\t").append(JasminInstructions.if_icmple(instruction.getLabel())).append("\n");
-                case GTE -> builder.append("\t").append(JasminInstructions.if_icmpge(instruction.getLabel())).append("\n");
-                case EQ -> builder.append("\t").append(JasminInstructions.if_icmpeq(instruction.getLabel())).append("\n");
-                case NEQ -> builder.append("\t").append(JasminInstructions.if_icmpne(instruction.getLabel())).append("\n");
+                case AND,ANDB -> instructionsBuilder.append("\t").append(JasminInstructions.iand()).append("\n").append("\t").append(JasminInstructions.ifne(instruction.getLabel())).append("\n");
+                case OR,ORB -> instructionsBuilder.append("\t").append(JasminInstructions.ior()).append("\n").append("\t").append(JasminInstructions.ifne(instruction.getLabel())).append("\n");
+                case LTH -> instructionsBuilder.append("\t").append(JasminInstructions.if_icmplt(instruction.getLabel())).append("\n");
+                case GTH -> instructionsBuilder.append("\t").append(JasminInstructions.if_icmpgt(instruction.getLabel())).append("\n");
+                case LTE -> instructionsBuilder.append("\t").append(JasminInstructions.if_icmple(instruction.getLabel())).append("\n");
+                case GTE -> instructionsBuilder.append("\t").append(JasminInstructions.if_icmpge(instruction.getLabel())).append("\n");
+                case EQ -> instructionsBuilder.append("\t").append(JasminInstructions.if_icmpeq(instruction.getLabel())).append("\n");
+                case NEQ -> instructionsBuilder.append("\t").append(JasminInstructions.if_icmpne(instruction.getLabel())).append("\n");
             }
         }
         else if (condition instanceof UnaryOpInstruction){
             generateLoadInstruction(((UnaryOpInstruction) condition).getOperand(),method);
             switch(opType){
-                case NOT,NOTB -> builder.append("\t").append(JasminInstructions.ifeq(instruction.getLabel())).append("\n");
+                case NOT,NOTB -> instructionsBuilder.append("\t").append(JasminInstructions.ifeq(instruction.getLabel())).append("\n");
             }
         }
     }
@@ -326,23 +333,23 @@ public class JasminGenerator {
             generateLoadInstruction(condition.getRightOperand(),method);
         else
             generateLoadInstruction(condition.getLeftOperand(),method);
-        builder.append("\t");
+        instructionsBuilder.append("\t");
         switch(condition.getOperation().getOpType()){
-            case LTH -> builder.append(leftIsZero ? JasminInstructions.ifgt(instruction.getLabel()) : JasminInstructions.iflt(instruction.getLabel()));
-            case GTH -> builder.append(leftIsZero ? JasminInstructions.iflt(instruction.getLabel()) : JasminInstructions.ifgt(instruction.getLabel()));
-            case LTE -> builder.append(leftIsZero ? JasminInstructions.ifge(instruction.getLabel()) : JasminInstructions.ifle(instruction.getLabel()));
-            case GTE -> builder.append(leftIsZero ? JasminInstructions.ifle(instruction.getLabel()) : JasminInstructions.ifge(instruction.getLabel()));
-            case EQ -> builder.append(JasminInstructions.ifeq(instruction.getLabel()));
-            case NEQ -> builder.append(JasminInstructions.ifne(instruction.getLabel()));
+            case LTH -> instructionsBuilder.append(leftIsZero ? JasminInstructions.ifgt(instruction.getLabel()) : JasminInstructions.iflt(instruction.getLabel()));
+            case GTH -> instructionsBuilder.append(leftIsZero ? JasminInstructions.iflt(instruction.getLabel()) : JasminInstructions.ifgt(instruction.getLabel()));
+            case LTE -> instructionsBuilder.append(leftIsZero ? JasminInstructions.ifge(instruction.getLabel()) : JasminInstructions.ifle(instruction.getLabel()));
+            case GTE -> instructionsBuilder.append(leftIsZero ? JasminInstructions.ifle(instruction.getLabel()) : JasminInstructions.ifge(instruction.getLabel()));
+            case EQ -> instructionsBuilder.append(JasminInstructions.ifeq(instruction.getLabel()));
+            case NEQ -> instructionsBuilder.append(JasminInstructions.ifne(instruction.getLabel()));
         }
-        builder.append("\n");
+        instructionsBuilder.append("\n");
     }
 
     private void generateGotoInstruction(GotoInstruction instruction, Method method) {
         while(method.getLabels().get(instruction.getLabel()).getInstType() == InstructionType.GOTO){
             instruction = (GotoInstruction) method.getLabels().get(instruction.getLabel());
         }
-        builder.append("\t").append(JasminInstructions.gotoInstruction(instruction.getLabel())).append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.gotoInstruction(instruction.getLabel())).append("\n");
 
     }
 
@@ -352,13 +359,27 @@ public class JasminGenerator {
             case invokestatic -> generateStaticCall(instruction,method);
             case invokespecial -> generateSpecialCall(instruction,method);
             case NEW -> generateNewCall(instruction,method);
+            case arraylength -> generateArrayLengthCall(instruction,method);
         }
     }
 
+    private void generateArrayLengthCall(CallInstruction instruction, Method method) {
+        generateLoadInstruction(instruction.getFirstArg(),method);
+        instructionsBuilder.append('\t').append(JasminInstructions.arraylength()).append('\n');
+    }
+
     private void generateNewCall(CallInstruction instruction, Method method) {
-        String className = JasminUtils.getFieldType(instruction.getFirstArg().getType(),false,classUnit);
-        builder.append('\t').append(JasminInstructions.newInstruction(className)).append('\n');
-        builder.append('\t').append(JasminInstructions.dup()).append('\n');
+        String className;
+        if ( instruction.getReturnType().getTypeOfElement() == ElementType.ARRAYREF){
+            className = "int";
+            generateLoadInstruction(instruction.getListOfOperands().get(0),method);
+            instructionsBuilder.append('\t').append(JasminInstructions.newarray(className)).append('\n');
+        }
+        else{
+            className = JasminUtils.getFieldType(instruction.getFirstArg().getType(),false,classUnit);
+            instructionsBuilder.append('\t').append(JasminInstructions.newInstruction(className)).append('\n');
+            instructionsBuilder.append('\t').append(JasminInstructions.dup()).append('\n');
+        }
     }
 
     private void generateSpecialCall(CallInstruction instruction, Method method) {
@@ -370,18 +391,21 @@ public class JasminGenerator {
             className = JasminUtils.getFieldType(instruction.getFirstArg().getType(),false,classUnit);
         }
         generateGeneralCall("invokespecial",className,instruction,method);
+        updateStack(-1);
         if (localConstructor) {
-            builder.append("\t").append("return").append("\n");
+            instructionsBuilder.append("\t").append("return").append("\n");
         }
 
     }
 
     private void generateStaticCall(CallInstruction instruction, Method method) {
         generateGeneralCall("invokestatic",JasminUtils.getElementName(instruction.getFirstArg()),instruction,method);
+
     }
 
     private void generateVirtualCall(CallInstruction instruction, Method method) {
         generateGeneralCall("invokevirtual",JasminUtils.getFieldType(instruction.getFirstArg().getType(),false,classUnit),instruction,method);
+        updateStack(-1);
     }
 
     private void generateGeneralCall(String invoke,String className, CallInstruction instruction, Method method) {
@@ -393,29 +417,63 @@ public class JasminGenerator {
         for (Element elem : instruction.getListOfOperands()) {
             generateLoadInstruction(elem,method);
         }
-        builder.append("\t").append(invoke).append(" ").append(className).append("/").append(methodName).append("(");
+        updateStack(-instruction.getListOfOperands().size());
+        if(instruction.getReturnType().getTypeOfElement() != ElementType.VOID)
+            updateStack(1);
+
+        instructionsBuilder.append("\t").append(invoke).append(" ").append(className).append("/").append(methodName).append("(");
         for (Element elem : instruction.getListOfOperands()) {
-            builder.append(JasminUtils.getFieldType(elem.getType(),true,classUnit));
+            instructionsBuilder.append(JasminUtils.getFieldType(elem.getType(),true,classUnit));
         }
-        builder.append(")").append(JasminUtils.getFieldType(instruction.getReturnType(),true,classUnit)).append("\n");
+        instructionsBuilder.append(")").append(JasminUtils.getFieldType(instruction.getReturnType(),true,classUnit)).append("\n");
     }
 
 
     private void generateAssignInstruction(AssignInstruction instruction,Method method) {
         Descriptor descriptor = JasminUtils.getDescriptor(instruction.getDest(),method);
         ElementType destType = instruction.getTypeOfAssign().getTypeOfElement();
-        if (checkIncrementAndGenerate(instruction,method,descriptor)){
+
+        if (instruction.getDest() instanceof ArrayOperand){
+            generateArrayAssign(instruction,method,destType);
+        }
+        else{
+            generateGeneralAssign(instruction,method,descriptor,destType);
+        }
+
+    }
+
+    private void generateArrayAssign(AssignInstruction instruction, Method method,ElementType destType) {
+        ArrayOperand arrayOperand = (ArrayOperand) instruction.getDest();
+
+        Descriptor arrayDescriptor = method.getVarTable().get(arrayOperand.getName());
+        instructionsBuilder.append("\t").append(JasminInstructions.aload(arrayDescriptor.getVirtualReg())).append("\n");
+
+        Element idx = arrayOperand.getIndexOperands().get(0);
+        generateLoadInstruction(idx,method);
+
+        generateInstruction(instruction.getRhs(),method);
+
+        String jasminInstruction = switch (destType) {
+            case INT32, BOOLEAN -> JasminInstructions.iastore();
+            case THIS, OBJECTREF, ARRAYREF, STRING, CLASS -> JasminInstructions.aastore();
+            case VOID -> null;
+        };
+
+        instructionsBuilder.append("\t").append(jasminInstruction).append("\n");
+
+    }
+    private void generateGeneralAssign(AssignInstruction instruction, Method method, Descriptor descriptor, ElementType destType) {
+        if (checkIncrementAndGenerate(instruction, method, descriptor)) {
             return;
         }
         if (descriptor == null) return;
-        generateInstruction(instruction.getRhs(),method);
+        generateInstruction(instruction.getRhs(), method);
         String jasminInstruction = switch (destType) {
-            case INT32,BOOLEAN -> JasminInstructions.istore(descriptor.getVirtualReg());
-            case THIS,OBJECTREF,ARRAYREF,STRING,CLASS -> JasminInstructions.astore(descriptor.getVirtualReg());
+            case INT32, BOOLEAN -> JasminInstructions.istore(descriptor.getVirtualReg());
+            case THIS, OBJECTREF, ARRAYREF, STRING, CLASS -> JasminInstructions.astore(descriptor.getVirtualReg());
             case VOID -> null;
         };
-        builder.append("\t").append(jasminInstruction).append("\n");
-
+        instructionsBuilder.append("\t").append(jasminInstruction).append("\n");
     }
 
     private boolean checkIncrementAndGenerate(AssignInstruction instruction, Method method, Descriptor descriptor) {
@@ -450,7 +508,7 @@ public class JasminGenerator {
 
         if (incrementValue < -128 || incrementValue > 127) return false;
 
-        builder.append("\t").append(JasminInstructions.iinc(varDescriptor.getVirtualReg(),incrementValue)).append("\n");
+        instructionsBuilder.append("\t").append(JasminInstructions.iinc(varDescriptor.getVirtualReg(),incrementValue)).append("\n");
 
         return true;
 
@@ -459,11 +517,11 @@ public class JasminGenerator {
     private void generateLoadInstruction(Element elem,Method method) {
         if (elem.isLiteral()){
             String literal = ((LiteralElement) elem).getLiteral();
-            builder.append("\t").append(JasminInstructions.generateInt(literal)).append("\n");
+            instructionsBuilder.append("\t").append(JasminInstructions.generateInt(literal)).append("\n");
             return;
         } else if (elem.getType().getTypeOfElement() == ElementType.BOOLEAN &&
             (JasminUtils.getElementName(elem).equals("true") || JasminUtils.getElementName(elem).equals("false"))) {
-            builder.append("\t").append(JasminInstructions.generateBoolean(JasminUtils.getElementName(elem))).append("\n");
+            instructionsBuilder.append("\t").append(JasminInstructions.generateBoolean(JasminUtils.getElementName(elem))).append("\n");
             return;
         }
 
@@ -471,13 +529,43 @@ public class JasminGenerator {
         if (descriptor == null) return;
         ElementType elemType = elem.getType().getTypeOfElement();
 
-        String jasminInstruction =  switch (elemType) {
-            case THIS, ARRAYREF, CLASS, OBJECTREF, STRING -> JasminInstructions.aload(descriptor.getVirtualReg());
-            case INT32, BOOLEAN -> JasminInstructions.iload(descriptor.getVirtualReg());
+        if (elem instanceof ArrayOperand arrayOperand){
+            generateArrayLoad(arrayOperand,elemType,method);
+        }
+        else{
+            generateGeneralLoad(descriptor,elemType);
+        }
+    }
+
+    private void generateArrayLoad(ArrayOperand arrayOperand, ElementType elemType, Method method) {
+        Descriptor arrayDescriptor = method.getVarTable().get(arrayOperand.getName());
+        if (arrayDescriptor == null) return;
+        instructionsBuilder.append("\t").append(JasminInstructions.aload(arrayDescriptor.getVirtualReg())).append("\n");
+
+        Element idx = arrayOperand.getIndexOperands().get(0);
+        generateLoadInstruction(idx,method);
+
+        String jasminInstruction = switch (elemType) {
+            case INT32, BOOLEAN -> JasminInstructions.iaload();
+            case THIS, OBJECTREF, ARRAYREF, STRING, CLASS -> JasminInstructions.aaload();
             case VOID -> null;
         };
 
-        builder.append("\t").append(jasminInstruction).append("\n");
+        instructionsBuilder.append("\t").append(jasminInstruction).append("\n");
+    }
+
+    private void generateGeneralLoad(Descriptor descriptor, ElementType elemType) {
+        String jasminInstruction = switch (elemType) {
+            case INT32, BOOLEAN -> JasminInstructions.iload(descriptor.getVirtualReg());
+            case THIS, OBJECTREF, ARRAYREF, STRING, CLASS -> JasminInstructions.aload(descriptor.getVirtualReg());
+            case VOID -> null;
+        };
+        instructionsBuilder.append("\t").append(jasminInstruction).append("\n");
+    }
+
+    public static void updateStack(int change){
+        currentStack += change;
+        if (currentStack > maxStack) maxStack = currentStack;
     }
 
 }
