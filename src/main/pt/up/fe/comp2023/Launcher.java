@@ -77,7 +77,7 @@ public class Launcher {
             //ollirResult = optimizer.optimize(ollirResult);
         }
 
-        //System.out.println(ollirResult.getOllirCode());
+        System.out.println(ollirResult.getOllirCode());
 
         // Check if there are parsing errors
         TestUtils.noErrors(ollirResult.getReports());
@@ -86,12 +86,12 @@ public class Launcher {
 
         JasminResult jasminResult = jasmin.toJasmin(ollirResult);
 
-        //System.out.println(jasminResult.getJasminCode());
+        System.out.println(jasminResult.getJasminCode());
 
         TestUtils.noErrors(jasminResult.getReports());
 
-        //jasminResult.compile();
-        //jasminResult.run();
+        jasminResult.compile();
+        jasminResult.run();
 
     }
 
