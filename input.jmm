@@ -1,29 +1,11 @@
-import ioPlus;
-class Test {
-
-    int intField;
-
-    public int get(){
-        return intField;
-    }
-    public int add(int a, ioPlus b){
-        int c;
-        int d;
-        int e;
-        d = 2;
-        e = a;
-        c = new Test().get();
-
-        return c;
-    }
-
+import io;
+class AddMultConstants {
 	public static void main(String[] args) {
-		ioPlus I;
-        Test e;
-        int a;
-        a = e.add(new Test().get(),I);
-
-
-
+		boolean a;
+		a = false;
+		io.println(a&&true);
+		io.println(1+2*3+5);
+		io.println(1+2*3+6/3);
+		io.println(!a);
 	}
 }

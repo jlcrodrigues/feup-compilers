@@ -5,8 +5,6 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
-import java.util.List;
-
 public class OllirUtils {
 
     public static String getCode(Symbol symbol){
@@ -43,6 +41,10 @@ public class OllirUtils {
             case "-" -> "-.i32 ";
             case "*" -> "*.i32 ";
             case "/" -> "/.i32 ";
+            case "<" -> "<.bool ";
+            case "<=" -> "<=.bool ";
+            case ">" -> ">.bool ";
+            case ">=" -> ">=.bool ";
             case "&&" -> "&&.bool ";
             case "||" -> "||.bool ";
             default -> null;
@@ -52,6 +54,14 @@ public class OllirUtils {
     public static String getTypeOperator(JmmNode node){
         return switch (node.get("op")) {
             case "+", "-", "*", "/" -> ".i32 ";
+            case "&&", "||", "<", "<=", ">", ">=" -> ".bool ";
+            default -> null;
+        };
+    }
+
+    public static String getTypeOperands(JmmNode node){
+        return switch (node.get("op")) {
+            case "+", "-", "*", "/", "<", "<=", ">", ">=" -> ".i32 ";
             case "&&", "||" -> ".bool ";
             default -> null;
         };
@@ -124,19 +134,23 @@ public class OllirUtils {
         return "\tinvokespecial("+ variable + "." + type + ",\"<init>\").V;\n";
     }
 
-
     public static String putField(String field, StringBuilder rhs, String type){
         return "\tputfield(this, " + field + "." + type + ", " + rhs + "." + type +").V;\n";
     }
-
 
     public static String getField(JmmNode node, String type) {
         return "getfield(this, " + node.get("id") + "." + type + ")." + type + ";\n";
     }
 
     public static Symbol getSymbol(JmmNode node, SymbolTable symbolTable) {
-        if (node.getKind().equals("Literal") && node.get("value").equals("this"))
-            return new Symbol(new Type("this",false),"this");
+        if (node.getKind().equals("Literal")){
+            var type = "";
+            if (node.get("value").equals("false") || node.get("value").equals("true"))
+                type = "bool";
+            else
+                type = node.get("value");
+            return new Symbol(new Type(type,false),node.get("value"));
+        }
         String parentMethod = getParentMethod(node);
         Symbol localSymbol = isLocal(node, symbolTable, parentMethod);
         if (localSymbol != null) {
