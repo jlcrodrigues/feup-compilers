@@ -39,6 +39,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         addVisit("ArrayAssignment", this::dealWithArrayAssignment);
         addVisit("NewArray", this::dealWithNewArray);
         addVisit("ArrayAccess", this::dealWithArrayAccess);
+        addVisit("MemberAccessLength", this::dealWithArrayLength);
         addVisit("NewObject", this::dealWithNewObject);
         addVisit("ExpressionStatement", this::dealWithExpressionStatement);
         addVisit("MethodCall", this::dealWithMethodCall);
@@ -207,6 +208,14 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         String temp2 = createTemp();
         ollirCode.append("\t").append(temp2).append(".i32 :=.i32 ").append(variable).append("[").append(temp1).append(".i32").append("].i32;\n");
         return new StringBuilder(temp2);
+    }
+
+    private StringBuilder dealWithArrayLength(JmmNode node, Void arg){
+        String temp = createTemp();
+        StringBuilder variable = visit(node.getJmmChild(0));
+        ollirCode.append("\t").append(temp).append(".i32 :=.i32 ");
+        ollirCode.append("arraylength(").append(variable).append(".array.i32).i32;\n");
+        return new StringBuilder(temp);
     }
 
     private StringBuilder dealWithNewObject(JmmNode node, Void arg) {
