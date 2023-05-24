@@ -36,6 +36,9 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         addVisit("MainMethod", this::dealWithMainMethod);
         addVisit("InstanceMethod", this::dealWithInstanceMethod);
         addVisit("Assignment", this::dealWithAssignment);
+        addVisit("ArrayAssignment", this::dealWithArrayAssignment);
+        addVisit("NewArray", this::dealWithNewArray);
+        addVisit("ArrayAccess", this::dealWithArrayAccess);
         addVisit("NewObject", this::dealWithNewObject);
         addVisit("ExpressionStatement", this::dealWithExpressionStatement);
         addVisit("MethodCall", this::dealWithMethodCall);
@@ -173,6 +176,39 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         return null;
     }
 
+    private StringBuilder dealWithArrayAssignment(JmmNode node, Void arg){
+        StringBuilder arrayAccess = visit(node.getJmmChild(0));
+        StringBuilder rhs = visit(node.getJmmChild(1));
+        String temp = createTemp();
+        ollirCode.append("\t").append(temp).append(".i32 ");
+        ollirCode.append(":=.i32 ").append(arrayAccess).append(".i32").append(";\n");
+        ollirCode.append("\t").append(node.get("id")).append("[").append(temp).append(".i32").append("].i32 ");
+        ollirCode.append(":=.i32 ").append(rhs).append(".i32;\n");
+
+        return null;
+    }
+
+    private StringBuilder dealWithNewArray(JmmNode node, Void arg){
+        var rhs = visit(node.getJmmChild(0));
+        String temp = createTemp();
+        ollirCode.append("\t").append(temp).append(".i32").append(" ");
+        ollirCode.append(":=.i32").append(" ");
+        ollirCode.append(rhs).append(".i32").append(";\n");
+
+        return new StringBuilder("new(array, " + temp + ".i32)");
+    }
+
+    private StringBuilder dealWithArrayAccess(JmmNode node, Void arg){
+        String temp1 = createTemp();
+        StringBuilder variable = visit(node.getJmmChild(0));
+        StringBuilder arrayAccess = visit(node.getJmmChild(1));
+        ollirCode.append("\t").append(temp1).append(".i32 ");
+        ollirCode.append(":=.i32 ").append(arrayAccess).append(".i32").append(";\n");
+        String temp2 = createTemp();
+        ollirCode.append("\t").append(temp2).append(".i32 :=.i32 ").append(variable).append("[").append(temp1).append(".i32").append("].i32;\n");
+        return new StringBuilder(temp2);
+    }
+
     private StringBuilder dealWithNewObject(JmmNode node, Void arg) {
         Symbol fieldSymbol = OllirUtils.isField(node.getJmmParent(), symbolTable);
         if (fieldSymbol != null || node.getJmmParent().getKind().equals("ChainMethods")
@@ -233,6 +269,8 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                     type = tempTypes.get(visit(child).toString()).substring(1);
                 else if (child.getKind().equals("Negate"))
                     type = "bool";
+                else if (child.getKind().equals("ArrayAccess"))
+                    type = "i32";
                 else
                     type = "V";
 
