@@ -17,6 +17,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     public final SymbolTable symbolTable;
     private int tempCount;
     private int auxIfLabel;
+    private int auxWhileLabel;
     private HashMap<String,String> tempTypes;
 
     public OllirGenerator(SymbolTable symbolTable) {
@@ -24,6 +25,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         this.symbolTable = symbolTable;
         this.tempCount = 0;
         this.auxIfLabel = 0;
+        this.auxWhileLabel = 0;
         this.tempTypes = new HashMap<>();
     }
 
@@ -284,6 +286,17 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private StringBuilder dealWithWhile(JmmNode node, Void arg) {
+        StringBuilder condition = visit(node.getJmmChild(0));
+        int currentLabel = ++auxWhileLabel;
+
+        ollirCode.append("\nif (").append(condition).append(")").append(" goto While").append(currentLabel).append(";\n");
+        ollirCode.append("goto EndWhile").append(currentLabel).append(";\n");
+        ollirCode.append("While").append(currentLabel).append(":\n");
+
+        visit(node.getJmmChild(1));
+
+        ollirCode.append("\nif (").append(condition).append(")").append(" goto While").append(currentLabel).append(";\n");
+        ollirCode.append("EndWhile").append(currentLabel).append(":\n");
         return null;
     }
 
@@ -295,19 +308,19 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         ollirCode.append("\nif (").append(visit(node.getJmmChild(0))).append(")");
 
         if (children.get(children.size()-1).getKind().equals("Else")) {
-            ollirCode.append(" goto Then").append(auxIfLabel).append(";\n");
-            ollirCode.append("goto Else").append(auxIfLabel).append(";\n");
-            ollirCode.append("Then").append(auxIfLabel).append(":\n");
+            ollirCode.append(" goto Then").append(currentLabel).append(";\n");
+            ollirCode.append("goto Else").append(currentLabel).append(";\n");
+            ollirCode.append("Then").append(currentLabel).append(":\n");
             visit(node.getJmmChild(1));
-            ollirCode.append("goto Endif").append(auxIfLabel).append(";\n");
+            ollirCode.append("goto EndIf").append(currentLabel).append(";\n");
             visit(node.getJmmChild(2));
         }
         else {
-            ollirCode.append(" goto Endif").append(auxIfLabel).append(";\n");
+            ollirCode.append(" goto EndIf").append(currentLabel).append(";\n");
             visit(node.getJmmChild(1));
         }
 
-        ollirCode.append("Endif").append(currentLabel).append(":\n");
+        ollirCode.append("EndIf").append(currentLabel).append(":\n");
         return null;
     }
 

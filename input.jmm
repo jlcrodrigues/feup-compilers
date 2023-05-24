@@ -1,11 +1,32 @@
-import io;
-class AddMultConstants {
+import ioPlus;
+
+class IfWhileNested {
+
+
+    public int func(int a){
+        int i;
+        boolean flag;
+
+        flag = true;
+        i = 0;
+        while (i < a) {
+            if(flag){
+				ioPlus.printResult(1);
+			} else {
+				ioPlus.printResult(2);
+			}
+
+			flag = !flag;
+			i = i + 1;
+        }
+
+        return 1;
+    }
+
 	public static void main(String[] args) {
-		boolean a;
-		a = false;
-		io.println(a&&true);
-		io.println(1+2*3+5);
-		io.println(1+2*3+6/3);
-		io.println(!a);
+        IfWhileNested d;
+        int a;
+        d = new IfWhileNested();
+        a = d.func(3);
 	}
 }
