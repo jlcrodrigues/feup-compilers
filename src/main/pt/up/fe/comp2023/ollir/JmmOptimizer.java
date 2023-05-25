@@ -23,7 +23,6 @@ public class JmmOptimizer implements JmmOptimization {
         Map<String, String> config  = semanticsResult.getConfig();
         if (config.containsKey("optimize") && config.get("optimize").equals("true"))
             semanticsResult = optimize(semanticsResult);
-        System.out.println(semanticsResult.getRootNode().toTree());
 
         OllirGenerator ollirGenerator = new OllirGenerator(semanticsResult.getSymbolTable());
         ollirGenerator.visit(semanticsResult.getRootNode());
