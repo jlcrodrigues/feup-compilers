@@ -59,7 +59,7 @@ public class Launcher {
         if (errorCount > 0) return;
 
 
-        System.out.println(parserResult.getRootNode().toTree());
+        //System.out.println(parserResult.getRootNode().toTree());
 
         JmmSemanticsResult result = new AJmmAnalysis().semanticAnalysis(parserResult);
 
@@ -71,7 +71,7 @@ public class Launcher {
         JmmOptimizer optimizer = new JmmOptimizer();
         OllirResult ollirResult = optimizer.toOllir(result);
 
-        System.out.println(ollirResult.getOllirCode());
+        //System.out.println(ollirResult.getOllirCode());
 
         // Check if there are parsing errors
         TestUtils.noErrors(ollirResult.getReports());
@@ -80,9 +80,11 @@ public class Launcher {
 
         JasminResult jasminResult = jasmin.toJasmin(ollirResult);
 
-        System.out.println(jasminResult.getJasminCode());
+        //System.out.println(jasminResult.getJasminCode());
 
         TestUtils.noErrors(jasminResult.getReports());
+
+        System.out.println("Jasmin code running ...");
 
         jasminResult.compile();
         jasminResult.run();
