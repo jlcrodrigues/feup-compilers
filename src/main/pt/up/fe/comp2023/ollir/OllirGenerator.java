@@ -342,6 +342,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
         visit(node.getJmmChild(1));
 
+        condition = visit(node.getJmmChild(0));
         ollirCode.append("\nif (").append(condition).append(")").append(" goto While").append(currentLabel).append(";\n");
         ollirCode.append("EndWhile").append(currentLabel).append(":\n");
         return null;
