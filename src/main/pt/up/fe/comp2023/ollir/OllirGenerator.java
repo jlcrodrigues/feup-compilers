@@ -221,7 +221,8 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     private StringBuilder dealWithNewObject(JmmNode node, Void arg) {
         Symbol fieldSymbol = OllirUtils.isField(node.getJmmParent(), symbolTable);
         if (fieldSymbol != null || node.getJmmParent().getKind().equals("ChainMethods")
-                || node.getJmmParent().getKind().equals("Assignment") || node.getJmmParent().getKind().equals("MethodCall")){
+                || node.getJmmParent().getKind().equals("Assignment") || node.getJmmParent().getKind().equals("MethodCall")
+                || node.getJmmParent().getKind().equals("Parentheses")){
             var type = node.get("id");
             String temp = createTemp();
             ollirCode.append("\t").append(temp).append(".").append(type).append(" ");
@@ -243,12 +244,13 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
         StringBuilder methodInvokeString = visit(node.getJmmChild(0));
         StringBuilder result = new StringBuilder();
-        Symbol symbol = OllirUtils.getSymbol(node.getJmmChild(0).getJmmChild(0),symbolTable);
+        var grandChild = node.getJmmChild(0).getJmmChild(0).getKind().equals("Parentheses") ? node.getJmmChild(0).getJmmChild(0).getJmmChild(0):node.getJmmChild(0).getJmmChild(0);
+        Symbol symbol = OllirUtils.getSymbol(grandChild,symbolTable);
         String methodType = "";
         String type = "";
         StringBuilder params = new StringBuilder();
 
-        if (symbol != null || node.getJmmChild(0).getJmmChild(0).getKind().equals("NewObject")){
+        if (symbol != null || grandChild.getKind().equals("NewObject")){
 
             if (symbolTable.getMethods().contains(node.getJmmChild(0).get("id"))){
                 methodType = OllirUtils.getOllirType(symbolTable.getReturnType(node.getJmmChild(0).get("id")));
@@ -314,7 +316,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
 
     private StringBuilder dealWithChainMethods(JmmNode node, Void arg) {
         String type = "";
-        JmmNode src = node.getJmmChild(0);
+        JmmNode src = node.getJmmChild(0).getKind().equals("Parentheses") ? node.getJmmChild(0).getJmmChild(0) : node.getJmmChild(0);
 
         if (src.getKind().equals("Variable") && OllirUtils.isImport(src,symbolTable) == null){
             type = OllirUtils.getOllirType(OllirUtils.getSymbol(src,symbolTable).getType());
