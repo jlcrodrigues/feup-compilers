@@ -72,13 +72,13 @@ expression :
     | '!' expression #Negate
     | expression ('.' id = ID)+ #ChainMethods
     | expression '(' ( expression ( ',' expression )* )? ')' #MethodCall
+    | expression '.' 'length' #MemberAccessLength
     | expression op = ('*' | '/') expression #BinaryOp
     | expression op = ('+' | '-') expression #BinaryOp
     | expression op = ('<' | '<=' | '>' | '>=') expression #BinaryOp
     | expression op = ('==' | '!=') expression #BinaryOp
     | expression op = '&&' expression #BinaryOp
     | expression op = '||' expression #BinaryOp
-    | expression '.' 'length' #MemberAccessLength
     | 'new' 'int' '['expression']' #NewArray
     | 'new' id = ID '(' ')' #NewObject
     | value = INT #Literal

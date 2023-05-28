@@ -215,6 +215,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
         StringBuilder variable = visit(node.getJmmChild(0));
         ollirCode.append("\t").append(temp).append(".i32 :=.i32 ");
         ollirCode.append("arraylength(").append(variable).append(".array.i32).i32;\n");
+        tempTypes.put(temp,".i32");
         return new StringBuilder(temp);
     }
 
@@ -236,7 +237,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
     }
 
     private StringBuilder dealWithExpressionStatement(JmmNode node, Void arg){
-        ollirCode.append("\n\t").append(visit(node.getJmmChild(0)));
+        ollirCode.append("\t").append(visit(node.getJmmChild(0)));
         return null;
     }
 
@@ -276,7 +277,7 @@ public class OllirGenerator extends AJmmVisitor<Void, StringBuilder> {
                     type = OllirUtils.getOllirType(symbolTable.getReturnType(child.getJmmChild(0).get("id")));
                 else if (child.getKind().equals("NewObject"))
                     type = child.get("id");
-                else if (child.getKind().equals("BinaryOp"))
+                else if (child.getKind().equals("BinaryOp") || child.getKind().equals("MemberAccessLength"))
                     type = tempTypes.get(visit(child).toString()).substring(1);
                 else if (child.getKind().equals("Negate"))
                     type = "bool";
