@@ -10,20 +10,19 @@ For this project, you need to install [Java](https://jdk.java.net/), [Gradle](ht
 | Martim Henriques | up202004421 | 33%          |
 | Tiago Barbosa    | up202004926 | 33%          |
 
-Grade Proposal: 20
-
-## Project setup
+## Instructions 
+### Project setup
 
 There are some import folders in the repository. Your development source code is inside the subfolder named ``src/main``. Specifically, your initially application is in the folder ``src/main/pt/up/fe/comp2023``, and the grammar is in the subfolder ``src/main/antlr/comp2023/grammar``. Finally, the subfolder named ``test`` contains your unit tests.
 
-## Compile and Running
+### Compile and Running
 
 To compile and install the program, run ``gradle installDist``. This will compile your classes and create a launcher script in the folder ``./build/install/jmm/bin``. For convenience, there are two script files in the root folder, one for Windows (``jmm.bat``) and another for Linux (``jmm``), that call this launcher script.
 
 After compilation, a series of tests will be automatically executed. The build will stop if any test fails. Whenever you want to ignore the tests and build the program anyway, you can call Gradle with the flag ``-x test``.
 
 
-## Tests
+### Tests
 
 The base repository comes with two classes that contains unitary tests in the package ``pt.up.fe.comp``, ``TutorialTest`` and `` GrammarTest``. The tests in ``TutorialTest`` should all pass just using the provided code. ``GrammarTest`` contains tests for the complete Java-- grammar, and most should fail. By the end of Checkpoint 1, all tests should pass.
 
