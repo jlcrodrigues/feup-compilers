@@ -1,6 +1,6 @@
 # Compilers Project
 
-For this project, you need to install [Java](https://jdk.java.net/), [Gradle](https://gradle.org/install/), and [Git](https://git-scm.com/downloads/) (and optionally, a [Git GUI client](https://git-scm.com/downloads/guis), such as TortoiseGit or GitHub Desktop). Please check the [compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html) for Java and Gradle versions.
+This project is part of the Compiler's curricular unit @ FEUP. The goal was to develop a compiler for the Jasmin language, which is a subset of Java.
 
 ## Group 6d
 
@@ -11,6 +11,10 @@ For this project, you need to install [Java](https://jdk.java.net/), [Gradle](ht
 | Tiago Barbosa    | up202004926 | 33%          |
 
 ## Instructions 
+
+For this project, you need to install [Java](https://jdk.java.net/), [Gradle](https://gradle.org/install/), and [Git](https://git-scm.com/downloads/) (and optionally, a [Git GUI client](https://git-scm.com/downloads/guis), such as TortoiseGit or GitHub Desktop). Please check the [compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html) for Java and Gradle versions.
+
+
 ### Project setup
 
 There are some import folders in the repository. Your development source code is inside the subfolder named ``src/main``. Specifically, your initially application is in the folder ``src/main/pt/up/fe/comp2023``, and the grammar is in the subfolder ``src/main/antlr/comp2023/grammar``. Finally, the subfolder named ``test`` contains your unit tests.
